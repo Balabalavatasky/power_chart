@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:power_chart/chart/PowerChartData.dart';
 
-import 'PowerSparkData.dart';
-import 'paint/borderPaint.dart';
-import 'paint/gridPaint.dart';
+import '../paint/borderPaint.dart';
+import '../paint/gridPaint.dart';
+
 
 class BaseLayoutPainter extends CustomPainter {
   final PowerChartData data;
@@ -19,7 +20,6 @@ class BaseLayoutPainter extends CustomPainter {
     _drawBorder(canvas, size);
     _drawBackgroundGrid(canvas, size);
     _drawBackground(canvas, size);
-    _drawChart(canvas, size);
   }
 
   @override
@@ -75,6 +75,4 @@ class BaseLayoutPainter extends CustomPainter {
       backgroundPaint,
     );
   }
-
-  void _drawChart(Canvas canvas, Size size) {}
 }
