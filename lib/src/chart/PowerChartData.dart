@@ -3,12 +3,11 @@ typedef NormalizeFn<T> = double Function(T);
 
 class PowerChartData<T, D extends Comparable, R extends Comparable> {
   final List<T> dataList;
-  List<T> subdataList;
   final Function domainFn;
   final Function rangeFn;
 
   List<PowerChartPoint> pointList;
-  List<PowerChartPoint> subPointList;
+
   double minDoamin = 0;
   double maxDomain = 0;
   double minRange = 0;
@@ -20,14 +19,10 @@ class PowerChartData<T, D extends Comparable, R extends Comparable> {
   };
 
   PowerChartData(this.dataList, this.domainFn, this.rangeFn,
-      {Function hightlightedFn, List<T> subdataList}) {
-    this.subdataList = subdataList;
+      {Function hightlightedFn}) {
     pointList = _covertToStandardPowerChartData(this.dataList,
         hightlightedFn: hightlightedFn);
-    if (this.subdataList != null) {
-      subPointList = _covertToStandardPowerChartData(this.subdataList,
-          hightlightedFn: hightlightedFn);
-    }
+
 
     this.pointList.sort((a, b) => a.x.compareTo(b.x));
     minDoamin = this.pointList.first.x;

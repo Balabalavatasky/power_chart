@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:power_chart/chart/PowerChartData.dart';
+import 'package:power_chart/src/chart/PowerChartData.dart';
 
 class LineChartPainter extends CustomPainter {
   final PowerChartData data;

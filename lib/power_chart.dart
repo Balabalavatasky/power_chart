@@ -1,7 +1,7 @@
 library power_chart;
 
-/// A Calculator.
-class Calculator {
-  /// Returns [value] plus 1.
-  int addOne(int value) => value + 1;
-}
+export 'src/chart/Chart.dart';
+export 'src/configuration/chartAxis.dart';
+export 'src/configuration/backgroundGrid.dart';
+export 'src/configuration/chartBorder.dart';
+export 'src/configuration/graph.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:power_chart/chart/PowerChartData.dart';
+import 'package:power_chart/src/chart/PowerChartData.dart';
 
 class SmoothlineChartPainter extends CustomPainter {
   final PowerChartData data;
