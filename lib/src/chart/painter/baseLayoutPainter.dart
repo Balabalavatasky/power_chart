@@ -18,7 +18,7 @@ class BaseLayoutPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(CustomPainter oldDelegate) {
-    return null;
+    return false;
   }
 
   void _drawBackgroundGrid(Canvas canvas, Size size) {

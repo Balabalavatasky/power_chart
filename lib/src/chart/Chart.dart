@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:power_chart/src/chart/painter/chartPainter.dart';
 import 'package:power_chart/src/configuration/backgroundGrid.dart';
 import 'package:power_chart/src/configuration/graph.dart';
-
-import 'painter/chartPainter/chartPainter.dart';
 
 class PowerChart extends StatefulWidget {
   final Color backgroundColor;
@@ -30,7 +29,7 @@ class _PowerChartState extends State<PowerChart> {
         return GestureDetector(
           child: CustomPaint(
             size: constraints.biggest,
-            painter: ChartPainter(null),
+            painter: ChartPainter(widget.graph),
           ),
         );
       },
