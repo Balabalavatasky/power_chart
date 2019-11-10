@@ -1,10 +1,12 @@
 typedef DistanceFn<T> = double Function(T, T);
 typedef NormalizeFn<T> = double Function(T);
+typedef DomainFn<T, D> = D Function(T);
+typedef RangeFn<T, R> = R Function(T);
 
 class PowerChartData<T, D extends Comparable, R extends Comparable> {
   final List<T> dataList;
-  final Function domainFn;
-  final Function rangeFn;
+  final DomainFn<T, D> domainFn;
+  final RangeFn<T, R> rangeFn;
 
   List<PowerChartPoint> pointList;
 
@@ -22,7 +24,6 @@ class PowerChartData<T, D extends Comparable, R extends Comparable> {
       {Function hightlightedFn}) {
     pointList = _covertToStandardPowerChartData(this.dataList,
         hightlightedFn: hightlightedFn);
-
 
     this.pointList.sort((a, b) => a.x.compareTo(b.x));
     minDoamin = this.pointList.first.x;

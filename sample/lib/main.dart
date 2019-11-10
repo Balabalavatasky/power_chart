@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:power_chart/power_chart.dart';
+import 'sampleData.dart';
 
 void main() => runApp(MyApp());
 
@@ -25,15 +27,21 @@ class MyHomePage extends StatefulWidget {
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
+
 class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
+      ),
       body: SafeArea(
-        child: PageView(
-          children: <Widget>[
-
-          ],
+        child: PowerChart(
+          sampleLineGraph,
+          chartBorder: sampleBorder,
+          backgroundgrid: sampleBackgroundGrid,
+          showIndicators: true,
+          indicator: sampleIndicator,
         ),
       ),
     );
