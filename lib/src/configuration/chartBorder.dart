@@ -1,10 +1,19 @@
+import 'package:flutter/material.dart';
 import 'package:power_chart/src/configuration/chartAxis.dart';
 
 class ChartBorder {
-  final ChartAxis top;
-  final ChartAxis left;
-  final ChartAxis bottom;
-  final ChartAxis right;
+  final ChartAxis horizontalAxis;
+  final ChartAxis verticalAxis;
+  final Paint top;
+  final Paint left;
+  final Paint bottom;
+  final Paint right;
 
-  ChartBorder({this.top, this.left, this.bottom, this.right});
+  ChartBorder(
+      {this.horizontalAxis,
+      this.verticalAxis,
+      this.top,
+      this.left,
+      this.bottom,
+      this.right});
 }

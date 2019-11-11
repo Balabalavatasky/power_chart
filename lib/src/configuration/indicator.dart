@@ -5,5 +5,5 @@ class Indicator {
   final Paint spotPaint;
   final double spotSize;
 
-  Indicator({this.indicatorPaint, this.spotPaint, this.spotSize});
+  Indicator({this.indicatorPaint, this.spotPaint, this.spotSize = 5});
 }

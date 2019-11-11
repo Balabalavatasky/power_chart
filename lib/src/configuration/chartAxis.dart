@@ -14,7 +14,7 @@ class ChartAxis {
     this.autoScale = true,
     this.showScaleIndicator = false,
     this.interval = 1,
-    this.scaleCount,
+    this.scaleCount = 5,
     this.axisPaint,
     this.indicatorPaint,
     this.scaleStyle,

@@ -12,13 +12,8 @@ class IndicatorPainter extends BaseLayoutPainter {
   final ChartBorder border;
   final BackgroundGrid backgroundgrid;
 
-  IndicatorPainter(this.graph,
-      {this.showIndicators = false,
-      this.touchPoint,
-      this.backgroundColor,
-      this.indicator,
-      this.border,
-      this.backgroundgrid})
+  IndicatorPainter(this.graph, this.showIndicators, this.touchPoint,
+      this.backgroundColor, this.indicator, this.border, this.backgroundgrid)
       : super(graph,
             showIndicators: showIndicators,
             touchPoint: touchPoint,
@@ -37,7 +32,7 @@ class IndicatorPainter extends BaseLayoutPainter {
 
   @override
   bool shouldRepaint(IndicatorPainter oldDelegate) {
-    return showIndicators && oldDelegate.touchPoint == touchPoint;
+    return showIndicators && oldDelegate.touchPoint != touchPoint;
   }
 
   void _drawIndicators(Canvas canvas, Size size) {
@@ -62,18 +57,27 @@ class IndicatorPainter extends BaseLayoutPainter {
       }
     }
     for (var i = 0; i < indicatorPositions.length; i++) {
+      Paint indicatorPaint = indicator.indicatorPaint;
+      if (indicatorPaint == null) {
+        indicatorPaint = this.theme.indicatorPaint;
+      }
+
+      Paint spotPaint = indicator.indicatorPaint;
+      if (spotPaint == null) {
+        spotPaint = this.theme.spotPaint;
+      }
+
       if (indicatorPositions[i] != null) {
-        if (i == indicatorPositions.length) {
+        if (i == indicatorPositions.length - 1) {
           canvas.drawLine(indicatorPositions[i],
-              Offset(indicatorPositions[i].dx, 0), indicator.indicatorPaint);
+              Offset(indicatorPositions[i].dx, size.height), indicatorPaint);
         } else {
           canvas.drawLine(
               indicatorPositions[i],
-              Offset(indicatorPositions[i].dx, indicatorPositions[i + 1].dy),
-              indicator.indicatorPaint);
+              Offset(indicatorPositions[i].dx, indicatorPositions[i].dy),
+              indicatorPaint);
         }
-        canvas.drawCircle(
-            indicatorPositions[i], indicator.spotSize, indicator.spotPaint);
+        canvas.drawCircle(indicatorPositions[i], indicator.spotSize, spotPaint);
       }
     }
   }

@@ -13,7 +13,6 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primaryColor: const Color(0xff262545),
         primaryColorDark: const Color(0xff201f39),
-        brightness: Brightness.dark,
       ),
       home: const MyHomePage(title: 'power_chart'),
     );
@@ -35,13 +34,18 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: SafeArea(
-        child: PowerChart(
-          sampleLineGraph,
-          chartBorder: sampleBorder,
-          backgroundgrid: sampleBackgroundGrid,
-          showIndicators: true,
-          indicator: sampleIndicator,
+      body: Center(
+        child: Container(
+          width: 300,
+          height: 200,
+          child: PowerChart(
+            sampleLineGraph,
+            backgroundColor: Colors.green[100],
+            chartBorder: sampleBorder,
+            backgroundgrid: sampleBackgroundGrid,
+            showIndicators: true,
+            indicator: sampleIndicator,
+          ),
         ),
       ),
     );

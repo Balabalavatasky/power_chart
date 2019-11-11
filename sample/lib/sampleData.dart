@@ -12,18 +12,20 @@ List<Graph> get sampleLineGraph =>
         data, (s) => s.domainValue, (s) => s.rangeValue)));
 
 ChartBorder get sampleBorder => ChartBorder(
-      left: ChartAxis(),
-      bottom: ChartAxis(),
+      horizontalAxis: ChartAxis(showScale: true, showScaleIndicator: true),
+      verticalAxis: ChartAxis(showScale: true, showScaleIndicator: true),
     );
-BackgroundGrid get sampleBackgroundGrid=>BackgroundGrid();
-Indicator get sampleIndicator=>Indicator();
+BackgroundGrid get sampleBackgroundGrid =>
+    BackgroundGrid(showVerticalGridLine: false, showHorizontalGridLine: false);
+Indicator get sampleIndicator => Indicator();
 
 List<DataModel> get data => [
-      DataModel(1.0, 4.6, false),
-      DataModel(2.0, 3.1, false),
-      DataModel(3.0, 2.76, false),
-      DataModel(4.0, 8.1, false),
-      DataModel(5.0, 9.6, false),
-      DataModel(6.0, 2.32, false),
-      DataModel(7.0, 4.77, false),
+      DataModel(-1, -1, false),
+      DataModel(1.0, 1, false),
+      DataModel(2.0, 2, false),
+      DataModel(3.0, 3, false),
+      DataModel(4.0, 4, false),
+      DataModel(5.0, 5, false),
+      DataModel(6.0, 6, false),
+      DataModel(7.0, 7, false),
     ];

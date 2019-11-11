@@ -29,7 +29,7 @@ class PowerChart extends StatefulWidget {
 
 class _PowerChartState extends State<PowerChart> {
   List<Graph> graphList;
-
+  Offset touchPoint;
   @override
   void initState() {
     graphList = widget.graph;
@@ -38,7 +38,6 @@ class _PowerChartState extends State<PowerChart> {
 
   @override
   Widget build(BuildContext context) {
-    Offset touchPoint;
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         return GestureDetector(
@@ -65,7 +64,14 @@ class _PowerChartState extends State<PowerChart> {
           },
           child: CustomPaint(
             size: constraints.biggest,
-            painter: IndicatorPainter(graphList, touchPoint: touchPoint),
+            painter: IndicatorPainter(
+                graphList,
+                widget.showIndicators,
+                touchPoint,
+                widget.backgroundColor,
+                widget.indicator,
+                widget.chartBorder,
+                widget.backgroundgrid),
           ),
         );
       },
