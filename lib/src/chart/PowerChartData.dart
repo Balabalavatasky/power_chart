@@ -86,6 +86,8 @@ class PowerChartData<T, D extends Comparable, R extends Comparable> {
 class PowerChartPoint {
   double x;
   double y;
+  double coordinateX;
+  double coordinateY;
   bool isHighted = false;
 
   PowerChartPoint(num x, num y, {bool isHighted = false}) {

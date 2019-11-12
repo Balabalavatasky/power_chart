@@ -1,26 +1,24 @@
+import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:power_chart/power_chart.dart';
 import 'package:power_chart/src/configuration/enum.dart';
-import 'package:power_chart/src/configuration/indicator.dart';
+import 'package:power_chart/src/configuration/spot.dart';
 import 'package:power_chart/src/theme/defaultTheme.dart';
 
 class BaseLayoutPainter extends CustomPainter {
   ChartTheme theme;
-  final List<Graph> graph;
-  final bool showIndicators;
-  final Offset touchPoint;
-  Indicator indicator;
+  List<Graph> graph;
+  bool showIndicators;
+  Offset touchPoint;
+
   Color backgroundColor;
   ChartBorder border;
   BackgroundGrid backgroundgrid;
-
-  List<List<Offset>> _spotsList = List<List<Offset>>();
 
   double _maxDomain;
   double _maxRange;
   double _minDomain;
   double _minRange;
-  List<List<Offset>> get spotsList => _spotsList;
 
   BaseLayoutPainter(
     this.graph, {
@@ -28,7 +26,6 @@ class BaseLayoutPainter extends CustomPainter {
     this.showIndicators = false,
     this.touchPoint,
     this.backgroundColor,
-    this.indicator,
     this.border,
     this.backgroundgrid,
   }) {
@@ -175,26 +172,34 @@ class BaseLayoutPainter extends CustomPainter {
     final bottomLeft = Offset(0, size.height);
     final bottomRight = Offset(size.width, size.height);
 
-    if (border.top != null) {
+    if (border.showTop) {
       Paint axisPaint = border.top;
       if (axisPaint == null) {
         axisPaint = this.theme.axisPaint;
       }
       canvas.drawLine(topLeft, topRight, axisPaint);
     }
-    if (border.right != null) {
+    if (border.showRight) {
       Paint axisPaint = border.right;
       if (axisPaint == null) {
         axisPaint = this.theme.axisPaint;
       }
       canvas.drawLine(topRight, bottomRight, axisPaint);
     }
-    if (border.bottom != null) {
-      canvas.drawLine(bottomRight, bottomLeft, border.bottom);
+    if (border.showBootom) {
+      Paint axisPaint = border.bottom;
+      if (axisPaint == null) {
+        axisPaint = this.theme.axisPaint;
+      }
+      canvas.drawLine(bottomRight, bottomLeft, axisPaint);
     }
 
-    if (border.left != null) {
-      canvas.drawLine(bottomLeft, topLeft, border.left);
+    if (border.showLeft) {
+      Paint axisPaint = border.left;
+      if (axisPaint == null) {
+        axisPaint = this.theme.axisPaint;
+      }
+      canvas.drawLine(bottomLeft, topLeft, axisPaint);
     }
   }
 
@@ -202,7 +207,7 @@ class BaseLayoutPainter extends CustomPainter {
     for (var graph in graphList) {
       switch (graph.graphType) {
         case CHART_TYPE.sline:
-          _drawSmoothlineChart(canvas, size, graph);
+          _drawSplineChart(canvas, size, graph);
           break;
         case CHART_TYPE.pie:
           _drawPieChart(canvas, size, graph);
@@ -217,11 +222,11 @@ class BaseLayoutPainter extends CustomPainter {
     }
   }
 
-  void _drawSmoothlineChart(Canvas canvas, Size size, Graph graph) {
+  void _drawSplineChart(Canvas canvas, Size size, Graph graph) {
     final data = graph.data;
     final double domainDistance = this._maxDomain - this._minDomain;
     final double rangeDistance = this._maxRange - this._minRange;
-    List<Offset> _spotList = List<Offset>();
+
     final path = Path()
       ..moveTo(
           (data.pointList.first.x - this._minDomain) /
@@ -231,10 +236,11 @@ class BaseLayoutPainter extends CustomPainter {
               size.height);
 
     for (int i = 0; i < data.pointList.length - 1; i++) {
-      double x =
+      data.pointList[i].coordinateX =
           (data.pointList[i].x - this._minDomain) / domainDistance * size.width;
-      double y = (1 - (data.pointList[i].y - this._minRange) / rangeDistance) *
-          size.height;
+      data.pointList[i].coordinateY =
+          (1 - (data.pointList[i].y - this._minRange) / rangeDistance) *
+              size.height;
 
       double nextx = (data.pointList[i + 1].x - this._minDomain) /
           domainDistance *
@@ -243,16 +249,18 @@ class BaseLayoutPainter extends CustomPainter {
           (1 - (data.pointList[i + 1].y - this._minRange) / rangeDistance) *
               size.height;
 
-      path.moveTo(x, y);
-      _spotList.add(Offset(x, y));
+      path.moveTo(data.pointList[i].coordinateX, data.pointList[i].coordinateY);
 
-      Offset controllerPoint1 = Offset((nextx + x) * 0.5, y);
-      Offset controllerPoint2 = Offset((nextx + x) * 0.5, nexty);
+      Offset controllerPoint1 = Offset(
+          (nextx + data.pointList[i].coordinateX) * 0.5,
+          data.pointList[i].coordinateY);
+      Offset controllerPoint2 =
+          Offset((nextx + data.pointList[i].coordinateX) * 0.5, nexty);
 
       path.cubicTo(controllerPoint1.dx, controllerPoint1.dy,
           controllerPoint2.dx, controllerPoint2.dy, nextx, nexty);
     }
-    _spotsList.add(_spotList);
+
     Paint chartPaint = graph.chartPaint;
     if (chartPaint == null) {
       chartPaint = this.theme.linechartPaint;
@@ -266,24 +274,42 @@ class BaseLayoutPainter extends CustomPainter {
     final data = graph.data;
     final double domainDistance = this._maxDomain - this._minDomain;
     final double rangeDistance = this._maxRange - this._minRange;
-    List<Offset> _spotList = List<Offset>();
-    final path = Path()
-      ..moveTo(
-          (data.pointList.first.x - this._minDomain) /
-              domainDistance *
-              size.width,
-          (1 - (data.pointList.first.y - this._minRange) / rangeDistance) *
-              size.height);
 
-    for (var i = 1; i < data.pointList.length; i++) {
-      double x =
+    final path = Path();
+
+    for (var i = 0; i < data.pointList.length; i++) {
+      data.pointList[i].coordinateX =
           (data.pointList[i].x - this._minDomain) / domainDistance * size.width;
-      double y = (1 - (data.pointList[i].y - this._minRange) / rangeDistance) *
-          size.height;
-      path.lineTo(x, y);
-      _spotList.add(Offset(x, y));
+      data.pointList[i].coordinateY =
+          (1 - (data.pointList[i].y - this._minRange) / rangeDistance) *
+              size.height;
+      if (i == 0) {
+        path.moveTo(
+            data.pointList[i].coordinateX, data.pointList[i].coordinateY);
+      } else {
+        path.lineTo(
+            data.pointList[i].coordinateX, data.pointList[i].coordinateY);
+      }
+      Spot spot = graph.spot;
+      if (spot == null) {
+        spot = Spot(showSpots: false);
+      }
+      if (spot.showSpots) {
+        switch (spot.marker) {
+          case SPOT_SYMBOL.circle:
+            break;
+          case SPOT_SYMBOL.diamond:
+            break;
+          case SPOT_SYMBOL.square:
+            break;
+          case SPOT_SYMBOL.trangle:
+            break;
+          case SPOT_SYMBOL.triangle_down:
+            break;
+        }
+      }
     }
-    _spotsList.add(_spotList);
+
     Paint chartPaint = graph.chartPaint;
     if (chartPaint == null) {
       chartPaint = this.theme.linechartPaint;

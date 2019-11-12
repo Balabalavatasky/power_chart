@@ -69,7 +69,6 @@ class _PowerChartState extends State<PowerChart> {
                 widget.showIndicators,
                 touchPoint,
                 widget.backgroundColor,
-                widget.indicator,
                 widget.chartBorder,
                 widget.backgroundgrid),
           ),
