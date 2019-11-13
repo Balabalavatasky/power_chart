@@ -32,27 +32,27 @@ ChartBorder get sampleBorder => ChartBorder(
       verticalAxis: ChartAxis(showScale: true, showScaleIndicator: true),
     );
 BackgroundGrid get sampleBackgroundGrid =>
-    BackgroundGrid(showVerticalGridLine: false, showHorizontalGridLine: false);
+    BackgroundGrid(showVerticalGridLine: true, showHorizontalGridLine: true);
 Indicator get sampleIndicator => Indicator();
 
 List<DataModel> get data1 => [
-      DataModel(-1, 2, false),
+      DataModel(-1, -1, false),
       DataModel(1.0, 1, false),
       DataModel(2.0, 2, false),
       DataModel(3.0, 3, false),
       DataModel(4.0, 4, false),
       DataModel(5.0, 5, false),
       DataModel(6.0, 6, false),
-      DataModel(7.0, 4.6, false),
+      DataModel(7.0, 7, false),
     ];
 
 List<DataModel> get data2 => [
-      DataModel(0, 1.2, false),
-      DataModel(1.0, 2.3, false),
-      DataModel(2.0, 3.4, false),
-      DataModel(3.0, 2.5, false),
+      DataModel(0, 1.211, false),
+      DataModel(1.0, 2.33, false),
+      DataModel(2.0, 3.43, false),
+      DataModel(3.0, 2.555, false),
       DataModel(4.0, 4, false),
-      DataModel(5.0, 6.1, false),
-      DataModel(6.0, 2.5, false),
-      DataModel(7.0, 3.8, false),
+      DataModel(5.0, 6.12, false),
+      DataModel(6.0, 2.54, false),
+      DataModel(7.0, 3.58, false),
     ];

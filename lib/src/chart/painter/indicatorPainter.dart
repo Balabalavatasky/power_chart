@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:power_chart/power_chart.dart';
-import 'package:power_chart/src/chart/painter/baseLayoutPainter.dart';
+import 'package:power_chart/src/configuration/enum.dart';
 import 'package:power_chart/src/configuration/indicator.dart';
+import 'package:power_chart/src/configuration/spot.dart';
+import 'package:power_chart/src/theme/defaultTheme.dart';
 
-class IndicatorPainter extends BaseLayoutPainter {
+class IndicatorPainter extends CustomPainter {
+  ChartTheme theme;
   List<Graph> graphList;
   bool showIndicators;
   Offset touchPoint;
@@ -11,18 +14,24 @@ class IndicatorPainter extends BaseLayoutPainter {
   ChartBorder border;
   BackgroundGrid backgroundgrid;
 
-  IndicatorPainter(this.graphList, this.showIndicators, this.touchPoint,
-      this.backgroundColor, this.border, this.backgroundgrid)
-      : super(graphList,
-            showIndicators: showIndicators,
-            touchPoint: touchPoint,
-            backgroundColor: backgroundColor,
-            border: border,
-            backgroundgrid: backgroundgrid);
+  Size chartSize;
+  Offset canvasOffset;
+
+  IndicatorPainter(
+    this.graphList,
+    this.showIndicators,
+    this.touchPoint,
+    this.backgroundColor,
+    this.border,
+    this.backgroundgrid,
+  ) {
+    if (this.theme == null) {
+      this.theme = DefaultTheme();
+    }
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
-    super.paint(canvas, size);
     if (showIndicators && touchPoint != null) {
       _drawIndicators(canvas, size);
     }
@@ -35,7 +44,6 @@ class IndicatorPainter extends BaseLayoutPainter {
 
   void _drawTooltip(
       Canvas canvas, EdgeInsets padding, List<Indicator> indicators) {
-    //calculate center point position
     double maxNameWidth = 0;
     double nameHeight = indicators.first.nameTextPainter.height;
     for (var indicator in indicators) {
@@ -70,11 +78,66 @@ class IndicatorPainter extends BaseLayoutPainter {
               padding.top +
               nameHeight / 2 +
               (nameHeight + padding.top) * i);
-      canvas.drawCircle(circlePosition, circleRedius, indicators[i].spotPaint);
+
+      Spot tooltipSpot = Spot(showSpots: true);
+      if (indicators[i].spot == null) {
+        tooltipSpot.color = indicators[i].indicatorPaint.color;
+        tooltipSpot.marker = SPOT_SYMBOL.circle;
+      } else {
+        tooltipSpot.color = indicators[i].spot.color;
+        tooltipSpot.marker = indicators[i].spot.marker;
+      }
+      drawSpot(canvas, circlePosition.dx, circlePosition.dy, tooltipSpot);
       indicators[i].nameTextPainter.paint(
           canvas,
           Offset(topLeft.dx + padding.left + circleRedius * 2 + padding.left,
               topLeft.dy + padding.top + (nameHeight + padding.top) * i));
+    }
+  }
+
+  void drawSpot(Canvas canvas, double x, double y, Spot spot) {
+    if (spot.showSpots) {
+      Paint spotPaint = Paint()
+        ..style = PaintingStyle.fill
+        ..color = spot.color;
+      switch (spot.marker) {
+        case SPOT_SYMBOL.circle:
+          canvas.drawCircle(Offset(x, y), spot.spotSize, spotPaint);
+          break;
+        case SPOT_SYMBOL.diamond:
+          canvas.drawPath(
+              Path()
+                ..moveTo(x - 0.7 * spot.spotSize, y)
+                ..lineTo(x, y - 0.7 * spot.spotSize)
+                ..lineTo(x + 0.7 * spot.spotSize, y)
+                ..lineTo(x, y + 0.7 * spot.spotSize),
+              spotPaint);
+          break;
+        case SPOT_SYMBOL.square:
+          canvas.drawRect(
+              Rect.fromCenter(
+                  center: Offset(x, y),
+                  width: spot.spotSize * 2,
+                  height: spot.spotSize * 2),
+              spotPaint);
+          break;
+        case SPOT_SYMBOL.trangle:
+          canvas.drawPath(
+              Path()
+                ..moveTo(x - 0.7 * spot.spotSize, y)
+                ..lineTo(x, y - 0.7 * spot.spotSize)
+                ..lineTo(x + 0.7 * spot.spotSize, y),
+              spotPaint);
+          break;
+        case SPOT_SYMBOL.triangle_down:
+          canvas.drawPath(
+              Path()
+                ..moveTo(x - 0.7 * spot.spotSize, y)
+                ..lineTo(x, y + 0.7 * spot.spotSize)
+                ..lineTo(x + 0.7 * spot.spotSize, y),
+              spotPaint);
+          break;
+      }
     }
   }
 
@@ -91,17 +154,15 @@ class IndicatorPainter extends BaseLayoutPainter {
               chartPaint = this.theme.linechartPaint;
             }
             indicators.add(Indicator(
-                name: graph.name,
-                value: spot.y.toString(),
-                showSpot: graph.spot == null ? true : !graph.spot.showSpots,
-                position: Offset(spot.coordinateX, spot.coordinateY),
-                indicatorPaint: Paint()
-                  ..style = PaintingStyle.stroke
-                  ..strokeWidth = 1
-                  ..color = chartPaint.color,
-                spotPaint: Paint()
-                  ..style = PaintingStyle.fill
-                  ..color = chartPaint.color));
+              name: graph.name,
+              value: spot.y.toString(),
+              spot: graph.spot,
+              position: Offset(spot.coordinateX, spot.coordinateY),
+              indicatorPaint: Paint()
+                ..style = PaintingStyle.stroke
+                ..strokeWidth = 1
+                ..color = chartPaint.color,
+            ));
             break;
           }
         } else {
@@ -111,17 +172,15 @@ class IndicatorPainter extends BaseLayoutPainter {
               chartPaint = this.theme.linechartPaint;
             }
             indicators.add(Indicator(
-                name: graph.name,
-                value: spot.y.toString(),
-                showSpot: graph.spot == null ? true : !graph.spot.showSpots,
-                position: Offset(spot.coordinateX, spot.coordinateY),
-                indicatorPaint: Paint()
-                  ..style = PaintingStyle.stroke
-                  ..strokeWidth = 1
-                  ..color = chartPaint.color,
-                spotPaint: Paint()
-                  ..style = PaintingStyle.fill
-                  ..color = chartPaint.color));
+              name: graph.name,
+              value: spot.y.toString(),
+              spot: graph.spot,
+              position: Offset(spot.coordinateX, spot.coordinateY),
+              indicatorPaint: Paint()
+                ..style = PaintingStyle.stroke
+                ..strokeWidth = 1
+                ..color = chartPaint.color,
+            ));
             break;
           }
         }
@@ -136,7 +195,7 @@ class IndicatorPainter extends BaseLayoutPainter {
           if (i == indicators.length - 1) {
             canvas.drawLine(
                 indicators[i].position,
-                Offset(indicators[i].position.dx, size.height),
+                Offset(indicators[i].position.dx, size.height + 20),
                 indicators[i].indicatorPaint);
           } else {
             canvas.drawLine(
@@ -145,10 +204,16 @@ class IndicatorPainter extends BaseLayoutPainter {
                     indicators[i + 1].position.dy),
                 indicators[i].indicatorPaint);
           }
-          if (indicators[i].showSpot) {
-            canvas.drawCircle(indicators[i].position, indicators[i].spotSize,
-                indicators[i].spotPaint);
+          Spot tooltipSpot = Spot(showSpots: true);
+          if (indicators[i].spot == null) {
+            tooltipSpot.color = indicators[i].indicatorPaint.color;
+            tooltipSpot.marker = SPOT_SYMBOL.circle;
+          } else {
+            tooltipSpot.color = indicators[i].spot.color;
+            tooltipSpot.marker = indicators[i].spot.marker;
           }
+          drawSpot(canvas, indicators[i].position.dx, indicators[i].position.dy,
+              tooltipSpot);
         }
       }
     }

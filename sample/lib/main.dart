@@ -35,19 +35,22 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Center(
-        child: Container(
-          width: 300,
-          height: 200,
-          child: PowerChart(
-            sampleLineGraph,
-            backgroundColor: Colors.green[100],
-            chartBorder: sampleBorder,
-            backgroundgrid: sampleBackgroundGrid,
-            showIndicators: true,
-            indicator: sampleIndicator,
-          ),
-        ),
-      ),
+          child: Row(
+        children: <Widget>[
+          Container(
+            width: 250,
+            height: 250,
+            child: PowerChart(
+              sampleLineGraph,
+              backgroundColor: Colors.green[100],
+              chartBorder: sampleBorder,
+              backgroundgrid: sampleBackgroundGrid,
+              showIndicators: true,
+              indicator: sampleIndicator,
+            ),
+          )
+        ],
+      )),
     );
   }
 }

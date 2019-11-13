@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
 class ChartAxis {
-  final bool showScale;
-  final bool autoScale;
-  final bool showScaleIndicator;
-  final int interval;
-  final int scaleCount;
-  final Paint axisPaint;
-  final Paint indicatorPaint;
-  final TextStyle scaleStyle;
+  bool showScale;
+  bool autoScale;
+  bool showScaleIndicator;
+  int interval;
+  int scaleCount;
+  Paint axisPaint;
+  Paint indicatorPaint;
+  TextStyle scaleStyle;
   ChartAxis({
     this.showScale = false,
     this.autoScale = true,

@@ -1,4 +1,3 @@
-import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:power_chart/power_chart.dart';
 import 'package:power_chart/src/configuration/enum.dart';
@@ -14,6 +13,9 @@ class BaseLayoutPainter extends CustomPainter {
   Color backgroundColor;
   ChartBorder border;
   BackgroundGrid backgroundgrid;
+
+  Size chartSize;
+  Offset canvasOffset;
 
   double _maxDomain;
   double _maxRange;
@@ -32,9 +34,6 @@ class BaseLayoutPainter extends CustomPainter {
     if (this.theme == null) {
       this.theme = DefaultTheme();
     }
-  }
-
-  void _setScale(Size size) {
     _maxDomain = graph.first.data.maxDomain;
     _maxRange = graph.first.data.maxRange;
     _minDomain = graph.first.data.minDoamin;
@@ -54,18 +53,19 @@ class BaseLayoutPainter extends CustomPainter {
       }
     }
   }
-
   @override
   void paint(Canvas canvas, Size size) {
-    _setScale(size);
-    _drawBackground(canvas, size);
-    _drawAxis(canvas, size);
-    _drawChart(canvas, size, graph);
+    EdgeInsets padding = _drawAxis(canvas, size);
+    canvasOffset = Offset(padding.left + 0.1 * size.width, 0.1 * size.height);
+    canvas.translate(canvasOffset.dx, canvasOffset.dy);
+    chartSize = Size(size.width * 0.8, size.height * 0.8);
+    _drawChart(canvas, chartSize, graph);
+    canvas.restore();
   }
 
   @override
-  bool shouldRepaint(CustomPainter oldDelegate) {
-    return false;
+  bool shouldRepaint(BaseLayoutPainter oldDelegate) {
+    return oldDelegate.graph.length != graph.length;
   }
 
   void _drawBackground(Canvas canvas, Size size) {
@@ -82,51 +82,74 @@ class BaseLayoutPainter extends CustomPainter {
     );
   }
 
-  void _drawVerticalAxis(Canvas canvas, Size size) {
-    for (var i = 0; i < border.verticalAxis.scaleCount; i++) {
-      double x = 0;
-      double y = size.height / (border.verticalAxis.scaleCount - 1) * i;
-      if (border.verticalAxis.showScale != null) {
-        TextStyle scaleStyle = border.verticalAxis.scaleStyle;
-        if (scaleStyle == null) {
-          scaleStyle = this.theme.scaleStyle;
+  double _drawVerticalAxis(Canvas canvas, Size size) {
+    double paddingLeft = 0;
+    if (border.verticalAxis != null) {
+      List<TextPainter> tpList = List<TextPainter>();
+      //get the max width of scale text
+      if (border.verticalAxis.showScale) {
+        for (var i = 0; i < border.verticalAxis.scaleCount; i++) {
+          TextStyle scaleStyle = border.verticalAxis.scaleStyle;
+          if (scaleStyle == null) {
+            scaleStyle = this.theme.scaleStyle;
+          }
+          final String text = (this._minRange +
+                  (this._maxRange - this._minRange) /
+                      (border.horizontalAxis.scaleCount - 1) *
+                      i)
+              .toStringAsFixed(2);
+          TextPainter tp = TextPainter(
+              text: TextSpan(style: scaleStyle, text: text),
+              textAlign: TextAlign.right,
+              textDirection: TextDirection.ltr)
+            ..layout();
+          tpList.add(tp);
+          if (paddingLeft < tp.width) {
+            paddingLeft = tp.width;
+          }
         }
-        final String text = (this._minRange +
-                (this._maxRange - this._minRange) /
-                    (border.horizontalAxis.scaleCount - 1) *
-                    i)
-            .toStringAsFixed(2);
-        TextPainter tp = TextPainter(
-            text: TextSpan(style: scaleStyle, text: text),
-            textAlign: TextAlign.center,
-            textDirection: TextDirection.ltr)
-          ..layout();
-        tp.paint(
-            canvas, Offset(x - tp.width, size.height - (y + tp.height / 2)));
       }
-      if (border.verticalAxis.showScaleIndicator) {
-        Paint indicatorPaint = border.verticalAxis.indicatorPaint;
-        if (indicatorPaint == null) {
-          indicatorPaint = this.theme.indicatorPaint;
+      //draw axis
+      for (var i = 0; i < border.verticalAxis.scaleCount; i++) {
+        double scaleHeight =
+            size.height * 0.8 / (border.verticalAxis.scaleCount - 1);
+        double x = 0;
+        double y = scaleHeight * i;
+        if (border.verticalAxis.showScale) {
+          tpList[i].paint(canvas,
+              Offset(x, size.height * 0.9 - (y + tpList[i].height / 2)));
         }
-        canvas.drawLine(Offset(x, y), Offset(x + 5, y), indicatorPaint);
-      }
-      if (backgroundgrid.showVerticalGridLine) {
-        Paint verticalGridLinePaint = backgroundgrid.verticalGridLinePaint;
-        if (verticalGridLinePaint == null) {
-          verticalGridLinePaint = this.theme.verticalGridLinePaint;
+        if (border.verticalAxis.showScaleIndicator) {
+          Paint indicatorPaint = border.verticalAxis.indicatorPaint;
+          if (indicatorPaint == null) {
+            indicatorPaint = this.theme.indicatorPaint;
+          }
+          canvas.drawLine(
+              Offset(x + paddingLeft, y + size.height * 0.1),
+              Offset(x + 5 + paddingLeft, y + size.height * 0.1),
+              indicatorPaint);
         }
-        canvas.drawLine(
-            Offset(x, y), Offset(size.width, y), verticalGridLinePaint);
+        if (backgroundgrid.showVerticalGridLine) {
+          Paint verticalGridLinePaint = backgroundgrid.verticalGridLinePaint;
+          if (verticalGridLinePaint == null) {
+            verticalGridLinePaint = this.theme.verticalGridLinePaint;
+          }
+          canvas.drawLine(
+              Offset(x + paddingLeft, y + size.height * 0.1),
+              Offset(size.width + paddingLeft, y + size.height * 0.1),
+              verticalGridLinePaint);
+        }
       }
     }
+
+    return paddingLeft;
   }
 
-  void _drawHorizontalAxis(Canvas canvas, Size size) {
-    for (var i = 0; i < border.horizontalAxis.scaleCount; i++) {
-      double x = size.width / (border.horizontalAxis.scaleCount - 1) * i;
-      double y = size.height;
-      if (border.horizontalAxis.showScale != null) {
+  double _drawHorizontalAxis(Canvas canvas, Size size) {
+    double paddingBottom = 0;
+    List<TextPainter> tpList = List<TextPainter>();
+    if (border.horizontalAxis.showScale) {
+      for (var i = 0; i < border.horizontalAxis.scaleCount; i++) {
         TextStyle scaleStyle = border.horizontalAxis.scaleStyle;
         if (scaleStyle == null) {
           scaleStyle = this.theme.scaleStyle;
@@ -141,29 +164,50 @@ class BaseLayoutPainter extends CustomPainter {
             textAlign: TextAlign.center,
             textDirection: TextDirection.ltr)
           ..layout();
-        tp.paint(canvas, Offset(x - tp.width / 2, y));
+        tpList.add(tp);
+        if (paddingBottom < tp.height) {
+          paddingBottom = tp.height;
+        }
+      }
+    }
+
+    for (var i = 0; i < border.horizontalAxis.scaleCount; i++) {
+      double scaleWidth =
+          size.width * 0.8 / (border.horizontalAxis.scaleCount - 1);
+      double x = scaleWidth * i;
+      double y = size.height;
+      if (border.horizontalAxis.showScale) {
+        tpList[i].paint(
+            canvas, Offset(x - tpList[i].width / 2 + size.width * 0.1, y));
       }
       if (border.horizontalAxis.showScaleIndicator) {
         Paint indicatorPaint = border.horizontalAxis.indicatorPaint;
         if (indicatorPaint == null) {
           indicatorPaint = this.theme.indicatorPaint;
         }
-        canvas.drawLine(Offset(x, y), Offset(x, y - 5), indicatorPaint);
+        canvas.drawLine(Offset(x + size.width * 0.1, y),
+            Offset(x + size.width * 0.1, y - 5), indicatorPaint);
       }
       if (backgroundgrid.showVerticalGridLine) {
         Paint verticalGridLinePaint = backgroundgrid.verticalGridLinePaint;
         if (verticalGridLinePaint == null) {
           verticalGridLinePaint = this.theme.verticalGridLinePaint;
         }
-        canvas.drawLine(Offset(x, y), Offset(x, 0), verticalGridLinePaint);
+        canvas.drawLine(Offset(x + size.width * 0.1, y),
+            Offset(x + size.width * 0.1, 0), verticalGridLinePaint);
       }
     }
+    return paddingBottom;
   }
 
-  void _drawAxis(Canvas canvas, Size size) {
-    _drawHorizontalAxis(canvas, size);
-    _drawVerticalAxis(canvas, size);
+  EdgeInsets _drawAxis(Canvas canvas, Size size) {
+    double paddingLeft = _drawVerticalAxis(canvas, size);
+
+    canvas.translate(paddingLeft, 0);
+    double paddingBottom = _drawHorizontalAxis(canvas, size);
     _drawBorder(canvas, size);
+    canvas.restore();
+    return EdgeInsets.fromLTRB(paddingLeft, 0, 0, paddingBottom);
   }
 
   void _drawBorder(Canvas canvas, Size size) {
@@ -227,13 +271,7 @@ class BaseLayoutPainter extends CustomPainter {
     final double domainDistance = this._maxDomain - this._minDomain;
     final double rangeDistance = this._maxRange - this._minRange;
 
-    final path = Path()
-      ..moveTo(
-          (data.pointList.first.x - this._minDomain) /
-              domainDistance *
-              size.width,
-          (1 - (data.pointList.first.y - this._minRange) / rangeDistance) *
-              size.height);
+    final path = Path();
 
     for (int i = 0; i < data.pointList.length - 1; i++) {
       data.pointList[i].coordinateX =
@@ -292,22 +330,11 @@ class BaseLayoutPainter extends CustomPainter {
       }
       Spot spot = graph.spot;
       if (spot == null) {
-        spot = Spot(showSpots: false);
+        spot = this.theme.spot;
       }
-      if (spot.showSpots) {
-        switch (spot.marker) {
-          case SPOT_SYMBOL.circle:
-            break;
-          case SPOT_SYMBOL.diamond:
-            break;
-          case SPOT_SYMBOL.square:
-            break;
-          case SPOT_SYMBOL.trangle:
-            break;
-          case SPOT_SYMBOL.triangle_down:
-            break;
-        }
-      }
+
+      drawSpot(canvas, data.pointList[i].coordinateX,
+          data.pointList[i].coordinateY, spot);
     }
 
     Paint chartPaint = graph.chartPaint;
@@ -315,6 +342,52 @@ class BaseLayoutPainter extends CustomPainter {
       chartPaint = this.theme.linechartPaint;
     }
     canvas.drawPath(path, chartPaint);
+  }
+
+  void drawSpot(Canvas canvas, double x, double y, Spot spot) {
+    if (spot.showSpots) {
+      Paint spotPaint = Paint()
+        ..style = PaintingStyle.fill
+        ..color = spot.color;
+      switch (spot.marker) {
+        case SPOT_SYMBOL.circle:
+          canvas.drawCircle(Offset(x, y), spot.spotSize, spotPaint);
+          break;
+        case SPOT_SYMBOL.diamond:
+          canvas.drawPath(
+              Path()
+                ..moveTo(x - 0.7 * spot.spotSize, y)
+                ..lineTo(x, y - 0.7 * spot.spotSize)
+                ..lineTo(x + 0.7 * spot.spotSize, y)
+                ..lineTo(x, y + 0.7 * spot.spotSize),
+              spotPaint);
+          break;
+        case SPOT_SYMBOL.square:
+          canvas.drawRect(
+              Rect.fromCenter(
+                  center: Offset(x, y),
+                  width: spot.spotSize * 2,
+                  height: spot.spotSize * 2),
+              spotPaint);
+          break;
+        case SPOT_SYMBOL.trangle:
+          canvas.drawPath(
+              Path()
+                ..moveTo(x - 0.7 * spot.spotSize, y)
+                ..lineTo(x, y - 0.7 * spot.spotSize)
+                ..lineTo(x + 0.7 * spot.spotSize, y),
+              spotPaint);
+          break;
+        case SPOT_SYMBOL.triangle_down:
+          canvas.drawPath(
+              Path()
+                ..moveTo(x - 0.7 * spot.spotSize, y)
+                ..lineTo(x, y + 0.7 * spot.spotSize)
+                ..lineTo(x + 0.7 * spot.spotSize, y),
+              spotPaint);
+          break;
+      }
+    }
   }
 
   void _drawBarChart(Canvas canvas, Size size, Graph graph) {

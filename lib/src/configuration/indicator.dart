@@ -1,21 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:power_chart/src/configuration/spot.dart';
 
 class Indicator {
   final Paint indicatorPaint;
-  final Paint spotPaint;
-  final double spotSize;
+  final Spot spot;
   final Offset position;
   final String name;
   final String value;
-  final bool showSpot;
+
   TextPainter _nameTextPainter;
 
   Indicator({
     this.indicatorPaint,
-    this.spotPaint,
-    this.spotSize = 5,
+    this.spot,
     this.position,
-    this.showSpot,
     this.name = "",
     this.value = "",
   }) {

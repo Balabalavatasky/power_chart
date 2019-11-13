@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:power_chart/src/configuration/spot.dart';
 
 abstract class ChartTheme {
   Paint get axisPaint;
@@ -6,7 +7,7 @@ abstract class ChartTheme {
   Paint get verticalGridLinePaint;
   Paint get horizontalGridLinePaint;
   Paint get linechartPaint;
-
+  Spot get spot;
   TextStyle get scaleStyle;
 }
 
@@ -34,4 +35,5 @@ class DefaultTheme extends ChartTheme {
     ..style = PaintingStyle.stroke
     ..strokeWidth = 1
     ..color = Colors.blueGrey;
+  Spot get spot => Spot(showSpots: false);
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:power_chart/src/chart/painter/baseLayoutPainter.dart';
 import 'package:power_chart/src/chart/painter/indicatorPainter.dart';
 import 'package:power_chart/src/configuration/backgroundGrid.dart';
 import 'package:power_chart/src/configuration/chartBorder.dart';
@@ -40,6 +41,22 @@ class _PowerChartState extends State<PowerChart> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
+        final baselayoutpaint = BaseLayoutPainter(graphList,
+            showIndicators: widget.showIndicators,
+            touchPoint: touchPoint,
+            backgroundColor: widget.backgroundColor,
+            border: widget.chartBorder,
+            backgroundgrid: widget.backgroundgrid);
+
+        final indicatorPaint = IndicatorPainter(
+          graphList,
+          widget.showIndicators,
+          touchPoint,
+          widget.backgroundColor,
+          widget.chartBorder,
+          widget.backgroundgrid,
+        );
+
         return GestureDetector(
           onPanUpdate: (detail) {
             if (widget.showIndicators) {
@@ -64,13 +81,13 @@ class _PowerChartState extends State<PowerChart> {
           },
           child: CustomPaint(
             size: constraints.biggest,
-            painter: IndicatorPainter(
-                graphList,
-                widget.showIndicators,
-                touchPoint,
-                widget.backgroundColor,
-                widget.chartBorder,
-                widget.backgroundgrid),
+            foregroundPainter: indicatorPaint,
+            child: RepaintBoundary(
+              child: CustomPaint(
+                size: constraints.biggest,
+                painter: baselayoutpaint,
+              ),
+            ),
           ),
         );
       },
