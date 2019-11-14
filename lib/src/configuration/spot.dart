@@ -9,7 +9,7 @@ class Spot {
   Spot({
     this.showSpots = false,
     this.marker = SPOT_SYMBOL.circle,
-    this.spotSize = 5,
+    this.spotSize = 10,
     this.color,
   });
 }

@@ -8,15 +8,14 @@ class DataModel {
 }
 
 List<Graph> get sampleLineGraph => []
-  ..add(
-    Graph.line(
-        PowerChartData<DataModel, double, double>(
-          data1,
-          (s) => s.domainValue,
-          (s) => s.rangeValue,
-        ),
-        name: "sample1"),
-  )
+  ..add(Graph.line(
+      PowerChartData<DataModel, double, double>(
+        data1,
+        (s) => s.domainValue,
+        (s) => s.rangeValue,
+      ),
+      name: "sample1",
+      spot: Spot(showSpots: true, marker: SPOT_SYMBOL.circle)))
   ..add(Graph.line(
       PowerChartData<DataModel, double, double>(
         data2,
@@ -26,13 +25,13 @@ List<Graph> get sampleLineGraph => []
       name: "sample2"));
 
 ChartBorder get sampleBorder => ChartBorder(
-      showBootom: true,
-      showLeft: true,
+      showHorizontalAxis: true,
+      showVerticalAxis: true,
       horizontalAxis: ChartAxis(showScale: true, showScaleIndicator: true),
       verticalAxis: ChartAxis(showScale: true, showScaleIndicator: true),
     );
 BackgroundGrid get sampleBackgroundGrid =>
-    BackgroundGrid(showVerticalGridLine: true, showHorizontalGridLine: true);
+    BackgroundGrid(showVerticalGridLine: false, showHorizontalGridLine: false);
 Indicator get sampleIndicator => Indicator();
 
 List<DataModel> get data1 => [

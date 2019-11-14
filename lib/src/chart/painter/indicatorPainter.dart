@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:power_chart/power_chart.dart';
+import 'package:power_chart/src/chart/painter/baseLayoutPainter.dart';
 import 'package:power_chart/src/configuration/enum.dart';
 import 'package:power_chart/src/configuration/indicator.dart';
 import 'package:power_chart/src/configuration/spot.dart';
 import 'package:power_chart/src/theme/defaultTheme.dart';
 
-class IndicatorPainter extends CustomPainter {
+class IndicatorPainter extends BaseLayoutPainter {
   ChartTheme theme;
   List<Graph> graphList;
   bool showIndicators;
@@ -24,7 +25,12 @@ class IndicatorPainter extends CustomPainter {
     this.backgroundColor,
     this.border,
     this.backgroundgrid,
-  ) {
+  ) : super(graphList,
+            showIndicators: showIndicators,
+            touchPoint: touchPoint,
+            backgroundColor: backgroundColor,
+            border: border,
+            backgroundgrid: backgroundgrid) {
     if (this.theme == null) {
       this.theme = DefaultTheme();
     }
@@ -95,54 +101,11 @@ class IndicatorPainter extends CustomPainter {
     }
   }
 
-  void drawSpot(Canvas canvas, double x, double y, Spot spot) {
-    if (spot.showSpots) {
-      Paint spotPaint = Paint()
-        ..style = PaintingStyle.fill
-        ..color = spot.color;
-      switch (spot.marker) {
-        case SPOT_SYMBOL.circle:
-          canvas.drawCircle(Offset(x, y), spot.spotSize, spotPaint);
-          break;
-        case SPOT_SYMBOL.diamond:
-          canvas.drawPath(
-              Path()
-                ..moveTo(x - 0.7 * spot.spotSize, y)
-                ..lineTo(x, y - 0.7 * spot.spotSize)
-                ..lineTo(x + 0.7 * spot.spotSize, y)
-                ..lineTo(x, y + 0.7 * spot.spotSize),
-              spotPaint);
-          break;
-        case SPOT_SYMBOL.square:
-          canvas.drawRect(
-              Rect.fromCenter(
-                  center: Offset(x, y),
-                  width: spot.spotSize * 2,
-                  height: spot.spotSize * 2),
-              spotPaint);
-          break;
-        case SPOT_SYMBOL.trangle:
-          canvas.drawPath(
-              Path()
-                ..moveTo(x - 0.7 * spot.spotSize, y)
-                ..lineTo(x, y - 0.7 * spot.spotSize)
-                ..lineTo(x + 0.7 * spot.spotSize, y),
-              spotPaint);
-          break;
-        case SPOT_SYMBOL.triangle_down:
-          canvas.drawPath(
-              Path()
-                ..moveTo(x - 0.7 * spot.spotSize, y)
-                ..lineTo(x, y + 0.7 * spot.spotSize)
-                ..lineTo(x + 0.7 * spot.spotSize, y),
-              spotPaint);
-          break;
-      }
-    }
-  }
-
   void _drawIndicators(Canvas canvas, Size size) {
     List<Indicator> indicators = List<Indicator>();
+
+    super.getHorizontalAxisScaleText(canvas, size);
+
     for (var graph in graphList) {
       for (var spot in graph.data.pointList) {
         if (indicators.length == 0) {
@@ -195,7 +158,8 @@ class IndicatorPainter extends CustomPainter {
           if (i == indicators.length - 1) {
             canvas.drawLine(
                 indicators[i].position,
-                Offset(indicators[i].position.dx, size.height + 20),
+                Offset(indicators[i].position.dx,
+                    size.height - super.paddingBottom),
                 indicators[i].indicatorPaint);
           } else {
             canvas.drawLine(
@@ -212,8 +176,8 @@ class IndicatorPainter extends CustomPainter {
             tooltipSpot.color = indicators[i].spot.color;
             tooltipSpot.marker = indicators[i].spot.marker;
           }
-          drawSpot(canvas, indicators[i].position.dx, indicators[i].position.dy,
-              tooltipSpot);
+          super.drawSpot(canvas, indicators[i].position.dx,
+              indicators[i].position.dy, tooltipSpot);
         }
       }
     }

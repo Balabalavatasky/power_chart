@@ -2,27 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:power_chart/src/configuration/chartAxis.dart';
 
 class ChartBorder {
+  final bool showHorizontalAxis;
+  final bool showVerticalAxis;
   final ChartAxis horizontalAxis;
   final ChartAxis verticalAxis;
-  final bool showTop;
-  final bool showLeft;
-  final bool showBootom;
-  final bool showRight;
-  final Paint top;
-  final Paint left;
-  final Paint bottom;
-  final Paint right;
+  final Paint horizontalAxisPaint;
+  final Paint verticalAxisPaint;
 
   ChartBorder({
+    this.showHorizontalAxis,
+    this.showVerticalAxis,
     this.horizontalAxis,
     this.verticalAxis,
-    this.top,
-    this.left,
-    this.bottom,
-    this.right,
-    this.showTop = false,
-    this.showLeft = false,
-    this.showBootom = false,
-    this.showRight = false,
+    this.horizontalAxisPaint,
+    this.verticalAxisPaint,
   });
 }
