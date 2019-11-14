@@ -8,7 +8,7 @@ class DataModel {
 }
 
 List<Graph> get sampleLineGraph => []
-  ..add(Graph.line(
+  ..add(Graph.spline(
       PowerChartData<DataModel, double, double>(
         data1,
         (s) => s.domainValue,
@@ -16,7 +16,7 @@ List<Graph> get sampleLineGraph => []
       ),
       name: "sample1",
       spot: Spot(showSpots: true, marker: SPOT_SYMBOL.circle)))
-  ..add(Graph.line(
+  ..add(Graph.spline(
       PowerChartData<DataModel, double, double>(
         data2,
         (s) => s.domainValue,
@@ -37,8 +37,8 @@ Indicator get sampleIndicator => Indicator();
 List<DataModel> get data1 => [
       DataModel(-1, -1, false),
       DataModel(1.0, 1, false),
-      DataModel(2.0, 2, false),
-      DataModel(3.0, 3, false),
+      DataModel(2, 1, false),
+      DataModel(3, 1, false),
       DataModel(4.0, 4, false),
       DataModel(5.0, 5, false),
       DataModel(6.0, 6, false),

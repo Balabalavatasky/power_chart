@@ -270,35 +270,58 @@ class BaseLayoutPainter extends CustomPainter {
 
     final path = Path();
 
-    for (int i = 0; i < data.pointList.length - 1; i++) {
-      data.pointList[i].coordinateX =
-          (data.pointList[i].x - this._minDomain) / domainDistance * size.width;
-      data.pointList[i].coordinateY =
-          (1 - (data.pointList[i].y - this._minRange) / rangeDistance) *
-              size.height;
-
-      double nextx = (data.pointList[i + 1].x - this._minDomain) /
-          domainDistance *
-          size.width;
-      double nexty =
-          (1 - (data.pointList[i + 1].y - this._minRange) / rangeDistance) *
-              size.height;
-
-      path.moveTo(data.pointList[i].coordinateX, data.pointList[i].coordinateY);
-
-      Offset controllerPoint1 = Offset(
-          (nextx + data.pointList[i].coordinateX) * 0.5,
-          data.pointList[i].coordinateY);
-      Offset controllerPoint2 =
-          Offset((nextx + data.pointList[i].coordinateX) * 0.5, nexty);
-
-      path.cubicTo(controllerPoint1.dx, controllerPoint1.dy,
-          controllerPoint2.dx, controllerPoint2.dy, nextx, nexty);
-    }
-
     Paint chartPaint = graph.chartPaint;
     if (chartPaint == null) {
       chartPaint = this.theme.linechartPaint;
+    }
+
+    var temp = const Offset(0.0, 0.0);
+
+    for (int i = 0; i < data.pointList.length; i++) {
+      data.pointList[i].coordinateX = (data.pointList[i].x - this._minDomain) /
+              domainDistance *
+              (size.width - paddingLeft) *
+              0.8 +
+          paddingLeft +
+          0.1 * (size.width - paddingLeft);
+      data.pointList[i].coordinateY =
+          (1 - (data.pointList[i].y - this._minRange) / rangeDistance) *
+                  (size.height - paddingBottom) *
+                  0.8 +
+              0.1 * (size.height - paddingBottom);
+    }
+    for (var i = 0; i < data.pointList.length; i++) {
+      if (i == 0) {
+        path.moveTo(
+            data.pointList[i].coordinateX, data.pointList[i].coordinateY);
+      } else {
+        final current = Offset(
+            data.pointList[i].coordinateX, data.pointList[i].coordinateY);
+
+        final previous = Offset(data.pointList[i - 1].coordinateX,
+            data.pointList[i - 1].coordinateY);
+
+        final next = Offset(
+            data.pointList[i + 1 < data.pointList.length ? i + 1 : i]
+                .coordinateX,
+            data.pointList[i + 1 < data.pointList.length ? i + 1 : i]
+                .coordinateY);
+        final controllerPoint1 = previous + temp;
+        temp = ((next - previous) / 2) * 0.4;
+        final controllerPoint2 = current - temp;
+        path.cubicTo(controllerPoint1.dx, controllerPoint1.dy,
+            controllerPoint2.dx, controllerPoint2.dy, current.dx, current.dy);
+
+        Spot spot = graph.spot;
+        if (spot == null) {
+          spot = this.theme.spot;
+        }
+        if (spot.color == null) {
+          spot.color = chartPaint.color;
+        }
+        drawSpot(canvas, data.pointList[i].coordinateX,
+            data.pointList[i].coordinateY, spot);
+      }
     }
     canvas.drawPath(path, chartPaint);
   }
