@@ -263,7 +263,30 @@ class BaseLayoutPainter extends CustomPainter {
     }
   }
 
+  double _getRangePixelPosition(
+      double rangeValue, double rangeDistance, double height) {
+    return (1 - (rangeValue - this._minRange) / rangeDistance) *
+            (height - paddingBottom) *
+            0.8 +
+        0.1 * (height - paddingBottom);
+  }
+
+  double _getDomainPixelPosition(
+      double domainValue, double domainDistance, double width) {
+    return (domainValue - this._minDomain) /
+            domainDistance *
+            (width - paddingLeft) *
+            0.8 +
+        paddingLeft +
+        0.1 * (width - paddingLeft);
+  }
+
   void _drawSplineChart(Canvas canvas, Size size, Graph graph) {
+    
+    //very brilliant spline chart render idea from
+    //imaNNeoFighT/fl_chart
+    //https://github.com/imaNNeoFighT/fl_chart
+
     final data = graph.data;
     final double domainDistance = this._maxDomain - this._minDomain;
     final double rangeDistance = this._maxRange - this._minRange;
@@ -274,53 +297,54 @@ class BaseLayoutPainter extends CustomPainter {
     if (chartPaint == null) {
       chartPaint = this.theme.linechartPaint;
     }
+    Spot spot = graph.spot;
+    if (spot == null) {
+      spot = this.theme.spot;
+    }
+    if (spot.color == null) {
+      spot.color = chartPaint.color;
+    }
 
     var temp = const Offset(0.0, 0.0);
-
-    for (int i = 0; i < data.pointList.length; i++) {
-      data.pointList[i].coordinateX = (data.pointList[i].x - this._minDomain) /
-              domainDistance *
-              (size.width - paddingLeft) *
-              0.8 +
-          paddingLeft +
-          0.1 * (size.width - paddingLeft);
-      data.pointList[i].coordinateY =
-          (1 - (data.pointList[i].y - this._minRange) / rangeDistance) *
-                  (size.height - paddingBottom) *
-                  0.8 +
-              0.1 * (size.height - paddingBottom);
-    }
     for (var i = 0; i < data.pointList.length; i++) {
+      data.pointList[i].coordinateX = _getDomainPixelPosition(
+          data.pointList[i].x, domainDistance, size.width);
+      data.pointList[i].coordinateY = _getRangePixelPosition(
+          data.pointList[i].y, rangeDistance, size.height);
+      drawSpot(canvas, data.pointList[i].coordinateX,
+          data.pointList[i].coordinateY, spot);
+
+      Offset current =
+          Offset(data.pointList[i].coordinateX, data.pointList[i].coordinateY);
       if (i == 0) {
         path.moveTo(
             data.pointList[i].coordinateX, data.pointList[i].coordinateY);
       } else {
-        final current = Offset(
-            data.pointList[i].coordinateX, data.pointList[i].coordinateY);
-
-        final previous = Offset(data.pointList[i - 1].coordinateX,
+        Offset previous = Offset(data.pointList[i - 1].coordinateX,
             data.pointList[i - 1].coordinateY);
 
-        final next = Offset(
-            data.pointList[i + 1 < data.pointList.length ? i + 1 : i]
-                .coordinateX,
-            data.pointList[i + 1 < data.pointList.length ? i + 1 : i]
-                .coordinateY);
-        final controllerPoint1 = previous + temp;
-        temp = ((next - previous) / 2) * 0.4;
-        final controllerPoint2 = current - temp;
+        Offset next = Offset(
+            _getDomainPixelPosition(
+                data.pointList[i + 1 < data.pointList.length ? i + 1 : i].x,
+                domainDistance,
+                size.width),
+            _getRangePixelPosition(
+                data.pointList[i + 1 < data.pointList.length ? i + 1 : i].y,
+                rangeDistance,
+                size.height));
+
+        Offset controllerPoint1 = previous + temp;
+        temp = ((next - previous) / 2) * 0.35;
+
+        if (i != data.pointList.length - 1 &&
+            ((current - next).dy <= 20 || (previous - current).dy <= 20)) {
+          temp = Offset(temp.dx, 0);
+        }
+
+        Offset controllerPoint2 = current - temp;
+
         path.cubicTo(controllerPoint1.dx, controllerPoint1.dy,
             controllerPoint2.dx, controllerPoint2.dy, current.dx, current.dy);
-
-        Spot spot = graph.spot;
-        if (spot == null) {
-          spot = this.theme.spot;
-        }
-        if (spot.color == null) {
-          spot.color = chartPaint.color;
-        }
-        drawSpot(canvas, data.pointList[i].coordinateX,
-            data.pointList[i].coordinateY, spot);
       }
     }
     canvas.drawPath(path, chartPaint);
