@@ -6,6 +6,8 @@ import 'package:power_chart/src/configuration/indicator.dart';
 import 'package:power_chart/src/configuration/spot.dart';
 import 'package:power_chart/src/theme/defaultTheme.dart';
 
+typedef DrilldownFunc<Offset> = Function(Offset);
+
 class IndicatorPainter extends BaseLayoutPainter {
   ChartTheme theme;
   List<Graph> graphList;
@@ -14,18 +16,15 @@ class IndicatorPainter extends BaseLayoutPainter {
   Color backgroundColor;
   ChartBorder border;
   BackgroundGrid backgroundgrid;
-
+  String touchOperation;
+  DrilldownFunc<double> onDrilldown;
   Size chartSize;
   Offset canvasOffset;
 
-  IndicatorPainter(
-    this.graphList,
-    this.showIndicators,
-    this.touchPoint,
-    this.backgroundColor,
-    this.border,
-    this.backgroundgrid,
-  ) : super(graphList,
+  IndicatorPainter(this.graphList, this.showIndicators, this.touchPoint,
+      this.backgroundColor, this.border, this.backgroundgrid,
+      {this.touchOperation, this.onDrilldown})
+      : super(graphList,
             showIndicators: showIndicators,
             touchPoint: touchPoint,
             backgroundColor: backgroundColor,
@@ -38,14 +37,61 @@ class IndicatorPainter extends BaseLayoutPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (showIndicators && touchPoint != null) {
-      _drawIndicators(canvas, size);
+    if ((showIndicators || graphList.any((g) => g.canDrilldown)) &&
+        touchPoint != null) {
+      _handleTouch(canvas, size);
     }
   }
 
   @override
   bool shouldRepaint(IndicatorPainter oldDelegate) {
     return showIndicators && oldDelegate.touchPoint != touchPoint;
+  }
+
+  void _handleTouch(Canvas canvas, Size size) {
+    List<Indicator> indicators = _getIndicators(canvas, size);
+    if (indicators.length > 0 && showIndicators) {
+      _drawIndicators(canvas, size, indicators);
+      _drawTooltip(canvas, EdgeInsets.fromLTRB(10, 5, 10, 5), indicators);
+    }
+
+    if (indicators.length > 0 &&
+        graphList.any((g) => g.canDrilldown) &&
+        touchOperation == "onPanStart") {
+      _handleDrilldown(indicators);
+    }
+  }
+
+  void _drawIndicators(Canvas canvas, Size size, List<Indicator> indicators) {
+    if (indicators.length > 0) {
+      for (var i = 0; i < indicators.length; i++) {
+        if (indicators[i] != null) {
+          if (i == indicators.length - 1) {
+            canvas.drawLine(
+                indicators[i].position,
+                Offset(indicators[i].position.dx,
+                    size.height - super.paddingBottom),
+                indicators[i].indicatorPaint);
+          } else {
+            canvas.drawLine(
+                indicators[i].position,
+                Offset(indicators[i + 1].position.dx,
+                    indicators[i + 1].position.dy),
+                indicators[i].indicatorPaint);
+          }
+          Spot tooltipSpot = Spot(showSpots: true);
+          if (indicators[i].spot == null) {
+            tooltipSpot.color = indicators[i].indicatorPaint.color;
+            tooltipSpot.marker = SPOT_SYMBOL.circle;
+          } else {
+            tooltipSpot.color = indicators[i].spot.color;
+            tooltipSpot.marker = indicators[i].spot.marker;
+          }
+          super.drawSpot(canvas, indicators[i].position.dx,
+              indicators[i].position.dy, tooltipSpot);
+        }
+      }
+    }
   }
 
   void _drawTooltip(
@@ -101,7 +147,7 @@ class IndicatorPainter extends BaseLayoutPainter {
     }
   }
 
-  void _drawIndicators(Canvas canvas, Size size) {
+  List<Indicator> _getIndicators(Canvas canvas, Size size) {
     List<Indicator> indicators = List<Indicator>();
 
     super.getHorizontalAxisScaleText(canvas, size);
@@ -150,35 +196,17 @@ class IndicatorPainter extends BaseLayoutPainter {
       }
     }
 
-    if (indicators.length > 0) {
-      _drawTooltip(canvas, EdgeInsets.fromLTRB(10, 5, 10, 5), indicators);
+    return indicators;
+  }
 
-      for (var i = 0; i < indicators.length; i++) {
-        if (indicators[i] != null) {
-          if (i == indicators.length - 1) {
-            canvas.drawLine(
-                indicators[i].position,
-                Offset(indicators[i].position.dx,
-                    size.height - super.paddingBottom),
-                indicators[i].indicatorPaint);
-          } else {
-            canvas.drawLine(
-                indicators[i].position,
-                Offset(indicators[i + 1].position.dx,
-                    indicators[i + 1].position.dy),
-                indicators[i].indicatorPaint);
-          }
-          Spot tooltipSpot = Spot(showSpots: true);
-          if (indicators[i].spot == null) {
-            tooltipSpot.color = indicators[i].indicatorPaint.color;
-            tooltipSpot.marker = SPOT_SYMBOL.circle;
-          } else {
-            tooltipSpot.color = indicators[i].spot.color;
-            tooltipSpot.marker = indicators[i].spot.marker;
-          }
-          super.drawSpot(canvas, indicators[i].position.dx,
-              indicators[i].position.dy, tooltipSpot);
+  void _handleDrilldown(List<Indicator> indicators) {
+    for (var indicator in indicators) {
+      if ((indicator.position.dx - touchPoint.dx).abs() <= 10 &&
+          (indicator.position.dy - touchPoint.dy).abs() <= 10) {
+        if (this.onDrilldown != null) {
+          this.onDrilldown(1.02);
         }
+        break;
       }
     }
   }

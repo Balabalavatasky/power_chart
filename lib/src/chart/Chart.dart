@@ -31,6 +31,8 @@ class PowerChart extends StatefulWidget {
 class _PowerChartState extends State<PowerChart> {
   List<Graph> graphList;
   Offset touchPoint;
+  String touchOperation;
+  int drilldownLevel = 0;
   @override
   void initState() {
     graphList = widget.graph;
@@ -49,19 +51,20 @@ class _PowerChartState extends State<PowerChart> {
             backgroundgrid: widget.backgroundgrid);
 
         final indicatorPaint = IndicatorPainter(
-          graphList,
-          widget.showIndicators,
-          touchPoint,
-          widget.backgroundColor,
-          widget.chartBorder,
-          widget.backgroundgrid,
-        );
+            graphList,
+            widget.showIndicators,
+            touchPoint,
+            widget.backgroundColor,
+            widget.chartBorder,
+            widget.backgroundgrid,
+            touchOperation: touchOperation);
 
         return GestureDetector(
           onPanUpdate: (detail) {
             if (widget.showIndicators) {
               setState(() {
                 touchPoint = detail.localPosition;
+                touchOperation = "onPanUpdate";
               });
             }
           },
@@ -69,6 +72,7 @@ class _PowerChartState extends State<PowerChart> {
             if (widget.showIndicators) {
               setState(() {
                 touchPoint = detail.localPosition;
+                touchOperation = "onPanStart";
               });
             }
           },
@@ -76,6 +80,7 @@ class _PowerChartState extends State<PowerChart> {
             if (widget.showIndicators) {
               setState(() {
                 touchPoint = null;
+                touchOperation = "onPanEnd";
               });
             }
           },
