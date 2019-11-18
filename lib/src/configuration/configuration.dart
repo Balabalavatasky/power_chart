@@ -5,3 +5,4 @@ export '../configuration/chartBorder.dart';
 export '../configuration/graph.dart';
 export '../configuration/spot.dart';
 export '../configuration/enum.dart';
+export '../configuration/area.dart';

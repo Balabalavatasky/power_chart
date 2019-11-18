@@ -282,27 +282,16 @@ class BaseLayoutPainter extends CustomPainter {
   }
 
   void _drawSplineChart(Canvas canvas, Size size, Graph graph) {
-    
-    //very brilliant spline chart render idea from
-    //imaNNeoFighT/fl_chart
-    //https://github.com/imaNNeoFighT/fl_chart
-
     final data = graph.data;
     final double domainDistance = this._maxDomain - this._minDomain;
     final double rangeDistance = this._maxRange - this._minRange;
 
-    final path = Path();
+    Path areapath = Path();
+    Path curvepath = Path();
 
     Paint chartPaint = graph.chartPaint;
     if (chartPaint == null) {
       chartPaint = this.theme.linechartPaint;
-    }
-    Spot spot = graph.spot;
-    if (spot == null) {
-      spot = this.theme.spot;
-    }
-    if (spot.color == null) {
-      spot.color = chartPaint.color;
     }
 
     var temp = const Offset(0.0, 0.0);
@@ -311,15 +300,19 @@ class BaseLayoutPainter extends CustomPainter {
           data.pointList[i].x, domainDistance, size.width);
       data.pointList[i].coordinateY = _getRangePixelPosition(
           data.pointList[i].y, rangeDistance, size.height);
-      drawSpot(canvas, data.pointList[i].coordinateX,
-          data.pointList[i].coordinateY, spot);
 
       Offset current =
           Offset(data.pointList[i].coordinateX, data.pointList[i].coordinateY);
       if (i == 0) {
-        path.moveTo(
+        curvepath.moveTo(
+            data.pointList[i].coordinateX, data.pointList[i].coordinateY);
+        areapath.moveTo(
             data.pointList[i].coordinateX, data.pointList[i].coordinateY);
       } else {
+        //very brilliant spline chart render idea from
+        //imaNNeoFighT/fl_chart
+        //https://github.com/imaNNeoFighT/fl_chart
+
         Offset previous = Offset(data.pointList[i - 1].coordinateX,
             data.pointList[i - 1].coordinateY);
 
@@ -343,11 +336,51 @@ class BaseLayoutPainter extends CustomPainter {
 
         Offset controllerPoint2 = current - temp;
 
-        path.cubicTo(controllerPoint1.dx, controllerPoint1.dy,
+        curvepath.cubicTo(controllerPoint1.dx, controllerPoint1.dy,
+            controllerPoint2.dx, controllerPoint2.dy, current.dx, current.dy);
+        areapath.cubicTo(controllerPoint1.dx, controllerPoint1.dy,
             controllerPoint2.dx, controllerPoint2.dy, current.dx, current.dy);
       }
     }
-    canvas.drawPath(path, chartPaint);
+
+    Area area = graph.area;
+    if (area == null) {
+      area = this.theme.area;
+    }
+    if (area.showArea) {
+      Paint areaPaint = Paint();
+      areaPaint.style = PaintingStyle.fill;
+      if (area.color != null) {
+        areaPaint.color = area.color.withOpacity(area.opacity);
+      }
+
+      if (_minRange > 0) {
+        
+      } else {
+        double zeroRangeValue =
+            _getRangePixelPosition(0, rangeDistance, size.height);
+        areapath.lineTo(data.pointList.last.coordinateX, zeroRangeValue);
+        areapath.lineTo(data.pointList.first.coordinateX, zeroRangeValue);
+        areapath.lineTo(
+            data.pointList.first.coordinateX, data.pointList.first.coordinateY);
+      }
+      canvas.drawPath(areapath, areaPaint);
+    }
+
+    canvas.drawPath(curvepath, chartPaint);
+
+    Spot spot = graph.spot;
+    if (spot == null) {
+      spot = this.theme.spot;
+    }
+    if (spot.color == null) {
+      spot.color = chartPaint.color;
+    }
+    if (spot.showSpots) {
+      for (var point in data.pointList) {
+        drawSpot(canvas, point.coordinateX, point.coordinateY, spot);
+      }
+    }
   }
 
   void _drawPieChart(Canvas canvas, Size size, Graph graph) {}

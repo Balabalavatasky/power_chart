@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:power_chart/power_chart.dart';
 
 class DataModel {
@@ -9,20 +10,33 @@ class DataModel {
 
 List<Graph> get sampleLineGraph => []
   ..add(Graph.spline(
-      PowerChartData<DataModel, double, double>(
-        data1,
-        (s) => s.domainValue,
-        (s) => s.rangeValue,
-      ),
-      name: "sample1",
-      spot: Spot(showSpots: true, marker: SPOT_SYMBOL.circle)))
-  ..add(Graph.spline(
-      PowerChartData<DataModel, double, double>(
-        data2,
-        (s) => s.domainValue,
-        (s) => s.rangeValue,
-      ),
-      name: "sample2"));
+          PowerChartData<DataModel, double, double>(
+            data1,
+            (s) => s.domainValue,
+            (s) => s.rangeValue,
+          ),
+          name: "sample1",
+          spot: Spot(showSpots: true, marker: SPOT_SYMBOL.circle),
+          area: Area(showArea: true, color: Colors.redAccent, opacity: 1))
+      .drilldown(Graph.spline(
+          PowerChartData<DataModel, double, double>(
+            data2,
+            (s) => s.domainValue,
+            (s) => s.rangeValue,
+          ),
+          name: "sample1",
+          spot: Spot(showSpots: true, marker: SPOT_SYMBOL.circle),
+          area: Area(showArea: true, color: Colors.redAccent, opacity: 1))))
+  ..add(
+    Graph.spline(
+        PowerChartData<DataModel, double, double>(
+          data2,
+          (s) => s.domainValue,
+          (s) => s.rangeValue,
+        ),
+        name: "sample2",
+        area: Area(showArea: true, color: Colors.yellowAccent, opacity: 0.5)),
+  );
 
 ChartBorder get sampleBorder => ChartBorder(
       showHorizontalAxis: true,
