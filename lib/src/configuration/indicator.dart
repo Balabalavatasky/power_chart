@@ -6,7 +6,8 @@ class Indicator {
   final Spot spot;
   final Offset position;
   final String name;
-  final String value;
+  final String rangeValue;
+  final String domainValue;
 
   TextPainter _nameTextPainter;
 
@@ -15,9 +16,10 @@ class Indicator {
     this.spot,
     this.position,
     this.name = "",
-    this.value = "",
+    this.rangeValue = "",
+    this.domainValue = "",
   }) {
-    String text = name + " : " + value;
+    String text = name + " : " + rangeValue;
     _nameTextPainter = TextPainter(
         text: TextSpan(
           style: TextStyle(

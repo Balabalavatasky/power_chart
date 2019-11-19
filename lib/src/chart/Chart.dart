@@ -70,6 +70,11 @@ class _PowerChartState extends State<PowerChart> {
       if ((indicator.position.dx - touchPoint.dx).abs() <= 10 &&
           (indicator.position.dy - touchPoint.dy).abs() <= 10) {
         print('drilldown!');
+        print(indicator.name +
+            " range:" +
+            indicator.rangeValue +
+            " domain:" +
+            indicator.domainValue);
         break;
       }
     }
@@ -163,7 +168,8 @@ class _PowerChartState extends State<PowerChart> {
               }
               indicators.add(Indicator(
                 name: graph.name,
-                value: spot.y.toString(),
+                rangeValue: spot.y.toString(),
+                domainValue: spot.x.toString(),
                 spot: graph.spot,
                 position: Offset(spot.coordinateX, spot.coordinateY),
                 indicatorPaint: Paint()
@@ -181,7 +187,8 @@ class _PowerChartState extends State<PowerChart> {
               }
               indicators.add(Indicator(
                 name: graph.name,
-                value: spot.y.toString(),
+                rangeValue: spot.y.toString(),
+                domainValue: spot.x.toString(),
                 spot: graph.spot,
                 position: Offset(spot.coordinateX, spot.coordinateY),
                 indicatorPaint: Paint()

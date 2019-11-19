@@ -8,6 +8,95 @@ class DataModel {
   DataModel(this.domainValue, this.rangeValue, this.isHightlighted);
 }
 
+class School {
+  final String schoolName;
+  final List<Grade> gradeList;
+  School(this.schoolName, this.gradeList);
+}
+
+class Grade {
+  final String gradeName;
+  final List<Class> classList;
+  Grade(this.gradeName, this.classList);
+}
+
+class Class {
+  final String className;
+
+  Class(this.className);
+}
+
+// class Teacher {
+//   final String teacherName;
+
+//   Teacher(this.teacherName);
+// }
+
+List<School> get schoolInfo => []
+  ..add(School(
+      "school1",
+      []
+        ..add(Grade(
+            "grade1",
+            []
+              ..add(Class("class1"))
+              ..add(Class("class2"))
+              ..add(Class("class3"))))
+        ..add(Grade(
+            "grade2",
+            []
+              ..add(Class("class1"))
+              ..add(Class("class2"))
+              ..add(Class("class3"))))
+        ..add(Grade(
+            "grade3",
+            []
+              ..add(Class("class1"))
+              ..add(Class("class2"))
+              ..add(Class("class3"))))
+        ..add(Grade(
+            "grade4",
+            []
+              ..add(Class("class1"))
+              ..add(Class("class2"))
+              ..add(Class("class3"))))
+        ..add(Grade(
+            "grade5",
+            []
+              ..add(Class("class1"))
+              ..add(Class("class2"))
+              ..add(Class("class3"))))))
+  ..add(School(
+      "school2",
+      []
+        ..add(Grade(
+            "grade1",
+            []
+              ..add(Class("class1"))
+              ..add(Class("class2"))
+              ..add(Class("class3"))))
+        ..add(Grade(
+            "grade2",
+            []
+              ..add(Class("class1"))
+              ..add(Class("class2"))
+              ..add(Class("class3"))))
+        ..add(Grade(
+            "grade3",
+            []
+              ..add(Class("class1"))
+              ..add(Class("class2"))
+              ..add(Class("class3"))))
+        ..add(Grade(
+            "grade4",
+            []
+              ..add(Class("class1"))
+              ..add(Class("class2"))
+              ..add(Class("class3"))))
+        ..add(Grade("grade5",
+            []..add(Class("class1"))..add(Class("class2"))..add(Class("class3"))))))
+  ..add(School("school3", []..add(Grade("grade1", []..add(Class("class1"))..add(Class("class2"))..add(Class("class3"))))..add(Grade("grade2", []..add(Class("class1"))..add(Class("class2"))..add(Class("class3"))))..add(Grade("grade3", []..add(Class("class1"))..add(Class("class2"))..add(Class("class3"))))..add(Grade("grade4", []..add(Class("class1"))..add(Class("class2"))..add(Class("class3"))))..add(Grade("grade5", []..add(Class("class1"))..add(Class("class2"))..add(Class("class3"))))));
+
 List<Graph> get sampleLineGraph => []
   ..add(Graph.spline(
           PowerChartData<DataModel, double, double>(
