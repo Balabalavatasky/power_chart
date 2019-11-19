@@ -51,8 +51,8 @@ Indicator get sampleIndicator => Indicator();
 List<DataModel> get data1 => [
       DataModel(-1, -1, false),
       DataModel(1.0, 1, false),
-      DataModel(2, 1, false),
-      DataModel(3, 1, false),
+      DataModel(2, 2, false),
+      DataModel(3, 3, false),
       DataModel(4.0, 4, false),
       DataModel(5.0, 5, false),
       DataModel(6.0, 6, false),

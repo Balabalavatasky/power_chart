@@ -17,13 +17,27 @@ class BaseLayoutPainter extends CustomPainter {
   double paddingLeft = 0;
   double paddingBottom = 0;
 
-  double _maxDomain;
-  double _maxRange;
-  double _minDomain;
-  double _minRange;
+  double maxDomain;
+  double maxRange;
+  double minDomain;
+  double minRange;
+
+  List<TextPainter> verticalTpList;
+  List<TextPainter> horizontalTpList;
+
+  double zeroRangeValue;
 
   BaseLayoutPainter(
     this.graph, {
+    this.paddingBottom,
+    this.paddingLeft,
+    this.maxRange,
+    this.maxDomain,
+    this.minRange,
+    this.minDomain,
+    this.zeroRangeValue,
+    this.verticalTpList,
+    this.horizontalTpList,
     this.theme,
     this.showIndicators = false,
     this.touchPoint,
@@ -33,24 +47,6 @@ class BaseLayoutPainter extends CustomPainter {
   }) {
     if (this.theme == null) {
       this.theme = DefaultTheme();
-    }
-    _maxDomain = graph.first.data.maxDomain;
-    _maxRange = graph.first.data.maxRange;
-    _minDomain = graph.first.data.minDoamin;
-    _minRange = graph.first.data.minRange;
-    for (var i = 1; i < graph.length; i++) {
-      if (graph[i].data.maxDomain > _maxDomain) {
-        _maxDomain = graph[i].data.maxDomain;
-      }
-      if (graph[i].data.maxRange > _maxRange) {
-        _maxRange = graph[i].data.maxRange;
-      }
-      if (graph[i].data.minRange < _minRange) {
-        _minRange = graph[i].data.minRange;
-      }
-      if (graph[i].data.minDoamin < _minDomain) {
-        _minDomain = graph[i].data.minDoamin;
-      }
     }
   }
   @override
@@ -76,34 +72,6 @@ class BaseLayoutPainter extends CustomPainter {
       ),
       backgroudPaint,
     );
-  }
-
-  List<TextPainter> getVerticalAxisScaleText(Canvas canvas, Size size) {
-    List<TextPainter> tpList = List<TextPainter>();
-    //get the max width of scale text
-    if (border.verticalAxis.showScale) {
-      for (var i = 0; i < border.verticalAxis.scaleCount; i++) {
-        TextStyle scaleStyle = border.verticalAxis.scaleStyle;
-        if (scaleStyle == null) {
-          scaleStyle = this.theme.scaleStyle;
-        }
-        final String text = (this._minRange +
-                (this._maxRange - this._minRange) /
-                    (border.horizontalAxis.scaleCount - 1) *
-                    i)
-            .toStringAsFixed(2);
-        TextPainter tp = TextPainter(
-            text: TextSpan(style: scaleStyle, text: text),
-            textAlign: TextAlign.right,
-            textDirection: TextDirection.ltr)
-          ..layout();
-        tpList.add(tp);
-        if (paddingLeft < tp.width) {
-          paddingLeft = tp.width;
-        }
-      }
-    }
-    return tpList;
   }
 
   void _drawVerticalAxis(Canvas canvas, Size size, List<TextPainter> tpList) {
@@ -160,33 +128,6 @@ class BaseLayoutPainter extends CustomPainter {
     }
   }
 
-  List<TextPainter> getHorizontalAxisScaleText(Canvas canvas, Size size) {
-    List<TextPainter> tpList = List<TextPainter>();
-    if (border.horizontalAxis.showScale) {
-      for (var i = 0; i < border.horizontalAxis.scaleCount; i++) {
-        TextStyle scaleStyle = border.horizontalAxis.scaleStyle;
-        if (scaleStyle == null) {
-          scaleStyle = this.theme.scaleStyle;
-        }
-        final String text = (this._minDomain +
-                (this._maxDomain - this._minDomain) /
-                    (border.horizontalAxis.scaleCount - 1) *
-                    i)
-            .toStringAsFixed(2);
-        TextPainter tp = TextPainter(
-            text: TextSpan(style: scaleStyle, text: text),
-            textAlign: TextAlign.center,
-            textDirection: TextDirection.ltr)
-          ..layout();
-        tpList.add(tp);
-        if (paddingBottom < tp.height) {
-          paddingBottom = tp.height;
-        }
-      }
-    }
-    return tpList;
-  }
-
   void _drawHorizontalAxis(Canvas canvas, Size size, List<TextPainter> tpList) {
     Paint horizontalAxisPaint = border.horizontalAxisPaint;
     if (horizontalAxisPaint == null) {
@@ -236,9 +177,6 @@ class BaseLayoutPainter extends CustomPainter {
   }
 
   void _drawAxis(Canvas canvas, Size size) {
-    final horizontalTpList = getHorizontalAxisScaleText(canvas, size);
-    final verticalTpList = getVerticalAxisScaleText(canvas, size);
-
     _drawBackground(canvas, size);
     _drawVerticalAxis(canvas, size, verticalTpList);
     _drawHorizontalAxis(canvas, size, horizontalTpList);
@@ -263,28 +201,8 @@ class BaseLayoutPainter extends CustomPainter {
     }
   }
 
-  double _getRangePixelPosition(
-      double rangeValue, double rangeDistance, double height) {
-    return (1 - (rangeValue - this._minRange) / rangeDistance) *
-            (height - paddingBottom) *
-            0.8 +
-        0.1 * (height - paddingBottom);
-  }
-
-  double _getDomainPixelPosition(
-      double domainValue, double domainDistance, double width) {
-    return (domainValue - this._minDomain) /
-            domainDistance *
-            (width - paddingLeft) *
-            0.8 +
-        paddingLeft +
-        0.1 * (width - paddingLeft);
-  }
-
   void _drawSplineChart(Canvas canvas, Size size, Graph graph) {
     final data = graph.data;
-    final double domainDistance = this._maxDomain - this._minDomain;
-    final double rangeDistance = this._maxRange - this._minRange;
 
     Path areapath = Path();
     Path curvepath = Path();
@@ -296,11 +214,6 @@ class BaseLayoutPainter extends CustomPainter {
 
     var temp = const Offset(0.0, 0.0);
     for (var i = 0; i < data.pointList.length; i++) {
-      data.pointList[i].coordinateX = _getDomainPixelPosition(
-          data.pointList[i].x, domainDistance, size.width);
-      data.pointList[i].coordinateY = _getRangePixelPosition(
-          data.pointList[i].y, rangeDistance, size.height);
-
       Offset current =
           Offset(data.pointList[i].coordinateX, data.pointList[i].coordinateY);
       if (i == 0) {
@@ -317,14 +230,10 @@ class BaseLayoutPainter extends CustomPainter {
             data.pointList[i - 1].coordinateY);
 
         Offset next = Offset(
-            _getDomainPixelPosition(
-                data.pointList[i + 1 < data.pointList.length ? i + 1 : i].x,
-                domainDistance,
-                size.width),
-            _getRangePixelPosition(
-                data.pointList[i + 1 < data.pointList.length ? i + 1 : i].y,
-                rangeDistance,
-                size.height));
+            data.pointList[i + 1 < data.pointList.length ? i + 1 : i]
+                .coordinateX,
+            data.pointList[i + 1 < data.pointList.length ? i + 1 : i]
+                .coordinateY);
 
         Offset controllerPoint1 = previous + temp;
         temp = ((next - previous) / 2) * 0.35;
@@ -354,11 +263,8 @@ class BaseLayoutPainter extends CustomPainter {
         areaPaint.color = area.color.withOpacity(area.opacity);
       }
 
-      if (_minRange > 0) {
-        
+      if (minRange > 0) {
       } else {
-        double zeroRangeValue =
-            _getRangePixelPosition(0, rangeDistance, size.height);
         areapath.lineTo(data.pointList.last.coordinateX, zeroRangeValue);
         areapath.lineTo(data.pointList.first.coordinateX, zeroRangeValue);
         areapath.lineTo(
@@ -387,8 +293,8 @@ class BaseLayoutPainter extends CustomPainter {
 
   void _drawLineChart(Canvas canvas, Size size, Graph graph) {
     final data = graph.data;
-    final double domainDistance = this._maxDomain - this._minDomain;
-    final double rangeDistance = this._maxRange - this._minRange;
+    final double domainDistance = this.maxDomain - this.minDomain;
+    final double rangeDistance = this.maxRange - this.minRange;
 
     final path = Path();
 
@@ -398,14 +304,14 @@ class BaseLayoutPainter extends CustomPainter {
     }
 
     for (var i = 0; i < data.pointList.length; i++) {
-      data.pointList[i].coordinateX = (data.pointList[i].x - this._minDomain) /
+      data.pointList[i].coordinateX = (data.pointList[i].x - this.minDomain) /
               domainDistance *
               (size.width - paddingLeft) *
               0.8 +
           paddingLeft +
           0.1 * (size.width - paddingLeft);
       data.pointList[i].coordinateY =
-          (1 - (data.pointList[i].y - this._minRange) / rangeDistance) *
+          (1 - (data.pointList[i].y - this.minRange) / rangeDistance) *
                   (size.height - paddingBottom) *
                   0.8 +
               0.1 * (size.height - paddingBottom);

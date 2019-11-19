@@ -16,14 +16,14 @@ class IndicatorPainter extends BaseLayoutPainter {
   Color backgroundColor;
   ChartBorder border;
   BackgroundGrid backgroundgrid;
-  String touchOperation;
   DrilldownFunc<double> onDrilldown;
   Size chartSize;
+  List<Indicator> indicators;
   Offset canvasOffset;
 
   IndicatorPainter(this.graphList, this.showIndicators, this.touchPoint,
       this.backgroundColor, this.border, this.backgroundgrid,
-      {this.touchOperation, this.onDrilldown})
+      {this.onDrilldown, this.indicators})
       : super(graphList,
             showIndicators: showIndicators,
             touchPoint: touchPoint,
@@ -38,7 +38,8 @@ class IndicatorPainter extends BaseLayoutPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if ((showIndicators || graphList.any((g) => g.canDrilldown)) &&
-        touchPoint != null) {
+        touchPoint != null &&
+        indicators != null) {
       _handleTouch(canvas, size);
     }
   }
@@ -49,16 +50,9 @@ class IndicatorPainter extends BaseLayoutPainter {
   }
 
   void _handleTouch(Canvas canvas, Size size) {
-    List<Indicator> indicators = _getIndicators(canvas, size);
     if (indicators.length > 0 && showIndicators) {
       _drawIndicators(canvas, size, indicators);
       _drawTooltip(canvas, EdgeInsets.fromLTRB(10, 5, 10, 5), indicators);
-    }
-
-    if (indicators.length > 0 &&
-        graphList.any((g) => g.canDrilldown) &&
-        touchOperation == "onPanStart") {
-      _handleDrilldown(indicators);
     }
   }
 
@@ -69,8 +63,7 @@ class IndicatorPainter extends BaseLayoutPainter {
           if (i == indicators.length - 1) {
             canvas.drawLine(
                 indicators[i].position,
-                Offset(indicators[i].position.dx,
-                    size.height - super.paddingBottom),
+                Offset(indicators[i].position.dx, size.height - paddingBottom),
                 indicators[i].indicatorPaint);
           } else {
             canvas.drawLine(
@@ -144,70 +137,6 @@ class IndicatorPainter extends BaseLayoutPainter {
           canvas,
           Offset(topLeft.dx + padding.left + circleRedius * 2 + padding.left,
               topLeft.dy + padding.top + (nameHeight + padding.top) * i));
-    }
-  }
-
-  List<Indicator> _getIndicators(Canvas canvas, Size size) {
-    List<Indicator> indicators = List<Indicator>();
-
-    super.getHorizontalAxisScaleText(canvas, size);
-
-    for (var graph in graphList) {
-      for (var spot in graph.data.pointList) {
-        if (indicators.length == 0) {
-          if (spot.coordinateX > touchPoint.dx + 10) {
-            break;
-          } else if ((touchPoint.dx - spot.coordinateX).abs() <= 10) {
-            Paint chartPaint = graph.chartPaint;
-            if (chartPaint == null) {
-              chartPaint = this.theme.linechartPaint;
-            }
-            indicators.add(Indicator(
-              name: graph.name,
-              value: spot.y.toString(),
-              spot: graph.spot,
-              position: Offset(spot.coordinateX, spot.coordinateY),
-              indicatorPaint: Paint()
-                ..style = PaintingStyle.stroke
-                ..strokeWidth = 1
-                ..color = chartPaint.color,
-            ));
-            break;
-          }
-        } else {
-          if (indicators.first.position.dx == spot.coordinateX) {
-            Paint chartPaint = graph.chartPaint;
-            if (chartPaint == null) {
-              chartPaint = this.theme.linechartPaint;
-            }
-            indicators.add(Indicator(
-              name: graph.name,
-              value: spot.y.toString(),
-              spot: graph.spot,
-              position: Offset(spot.coordinateX, spot.coordinateY),
-              indicatorPaint: Paint()
-                ..style = PaintingStyle.stroke
-                ..strokeWidth = 1
-                ..color = chartPaint.color,
-            ));
-            break;
-          }
-        }
-      }
-    }
-
-    return indicators;
-  }
-
-  void _handleDrilldown(List<Indicator> indicators) {
-    for (var indicator in indicators) {
-      if ((indicator.position.dx - touchPoint.dx).abs() <= 10 &&
-          (indicator.position.dy - touchPoint.dy).abs() <= 10) {
-        if (this.onDrilldown != null) {
-          this.onDrilldown(1.02);
-        }
-        break;
-      }
     }
   }
 }
