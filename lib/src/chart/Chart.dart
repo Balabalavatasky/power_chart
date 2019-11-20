@@ -65,17 +65,25 @@ class _PowerChartState extends State<PowerChart> {
     super.initState();
   }
 
+  void _handleDrillUp(int level, String xLabel) {
+    drilldownLevel = level;
+  }
+
   void _handleDrilldown(List<Indicator> indicators) {
-    for (var indicator in indicators) {
-      if ((indicator.position.dx - touchPoint.dx).abs() <= 10 &&
-          (indicator.position.dy - touchPoint.dy).abs() <= 10) {
-        print('drilldown!');
-        print(indicator.name +
-            " range:" +
-            indicator.rangeValue +
-            " domain:" +
-            indicator.domainValue);
-        break;
+    for (var graph in widget.graph) {
+      if (graph.canDrilldown && drilldownLevel < graph.drilldownList.length) {
+        for (var spot in graph.data.pointList) {
+          if (spot.coordinateX > touchPoint.dx + 10) {
+            break;
+          } else if ((touchPoint.dx - spot.coordinateX).abs() <= 10 &&
+              (touchPoint.dy - spot.coordinateY).abs() <= 10) {
+            var g = graph.drilldownList[drilldownLevel];
+            g.data.initData(spot.xLabel);
+            this.graphList = []..add(g);
+            drilldownLevel += 1;
+            break;
+          }
+        }
       }
     }
   }
@@ -230,31 +238,34 @@ class _PowerChartState extends State<PowerChart> {
           }
         }
 
-        final baselayoutpaint = BaseLayoutPainter(graphList,
-            minDomain: _minDomain,
-            minRange: _minRange,
-            maxRange: _maxRange,
-            maxDomain: _maxDomain,
-            paddingBottom: paddingBottom,
-            paddingLeft: paddingLeft,
-            verticalTpList: verticalTpList,
-            horizontalTpList: horizontalTpList,
-            zeroRangeValue: zeroRangeValue,
-            showIndicators: widget.showIndicators,
-            touchPoint: touchPoint,
-            backgroundColor: widget.backgroundColor,
-            border: widget.chartBorder,
-            backgroundgrid: widget.backgroundgrid);
+        final baselayoutpaint = BaseLayoutPainter(
+            graphList,
+            paddingBottom,
+            paddingLeft,
+            _maxRange,
+            _maxDomain,
+            _minRange,
+            _minDomain,
+            zeroRangeValue,
+            verticalTpList,
+            horizontalTpList,
+            theme,
+            widget.showIndicators,
+            widget.backgroundColor,
+            widget.chartBorder,
+            widget.backgroundgrid);
 
         final indicatorPaint = IndicatorPainter(
+            theme,
             graphList,
             widget.showIndicators,
             touchPoint,
             widget.backgroundColor,
             widget.chartBorder,
             widget.backgroundgrid,
-            indicators: indicators);
-        indicatorPaint.paddingBottom = paddingBottom;
+            paddingBottom,
+            indicators);
+
         return GestureDetector(
           onPanUpdate: (detail) {
             if (widget.showIndicators) {

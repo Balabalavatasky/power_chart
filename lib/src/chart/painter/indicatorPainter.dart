@@ -1,39 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:power_chart/power_chart.dart';
-import 'package:power_chart/src/chart/painter/baseLayoutPainter.dart';
 import 'package:power_chart/src/configuration/enum.dart';
 import 'package:power_chart/src/configuration/indicator.dart';
 import 'package:power_chart/src/configuration/spot.dart';
 import 'package:power_chart/src/theme/defaultTheme.dart';
 
-typedef DrilldownFunc<Offset> = Function(Offset);
+class IndicatorPainter extends CustomPainter {
+  final ChartTheme theme;
+  final List<Graph> graphList;
+  final bool showIndicators;
+  final Offset touchPoint;
+  final Color backgroundColor;
+  final ChartBorder border;
+  final BackgroundGrid backgroundgrid;
+  final List<Indicator> indicators;
+  final double paddingBottom;
 
-class IndicatorPainter extends BaseLayoutPainter {
-  ChartTheme theme;
-  List<Graph> graphList;
-  bool showIndicators;
-  Offset touchPoint;
-  Color backgroundColor;
-  ChartBorder border;
-  BackgroundGrid backgroundgrid;
-  DrilldownFunc<double> onDrilldown;
-  Size chartSize;
-  List<Indicator> indicators;
-  Offset canvasOffset;
-
-  IndicatorPainter(this.graphList, this.showIndicators, this.touchPoint,
-      this.backgroundColor, this.border, this.backgroundgrid,
-      {this.onDrilldown, this.indicators})
-      : super(graphList,
-            showIndicators: showIndicators,
-            touchPoint: touchPoint,
-            backgroundColor: backgroundColor,
-            border: border,
-            backgroundgrid: backgroundgrid) {
-    if (this.theme == null) {
-      this.theme = DefaultTheme();
-    }
-  }
+  IndicatorPainter(
+      this.theme,
+      this.graphList,
+      this.showIndicators,
+      this.touchPoint,
+      this.backgroundColor,
+      this.border,
+      this.backgroundgrid,
+      this.paddingBottom,
+      this.indicators);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -80,8 +72,8 @@ class IndicatorPainter extends BaseLayoutPainter {
             tooltipSpot.color = indicators[i].spot.color;
             tooltipSpot.marker = indicators[i].spot.marker;
           }
-          super.drawSpot(canvas, indicators[i].position.dx,
-              indicators[i].position.dy, tooltipSpot);
+          drawSpot(canvas, indicators[i].position.dx, indicators[i].position.dy,
+              tooltipSpot);
         }
       }
     }
@@ -137,6 +129,52 @@ class IndicatorPainter extends BaseLayoutPainter {
           canvas,
           Offset(topLeft.dx + padding.left + circleRedius * 2 + padding.left,
               topLeft.dy + padding.top + (nameHeight + padding.top) * i));
+    }
+  }
+
+  void drawSpot(Canvas canvas, double x, double y, Spot spot) {
+    if (spot.showSpots) {
+      Paint spotPaint = Paint()
+        ..style = PaintingStyle.fill
+        ..color = spot.color;
+      switch (spot.marker) {
+        case SPOT_SYMBOL.circle:
+          canvas.drawCircle(Offset(x, y), spot.spotSize / 2, spotPaint);
+          break;
+        case SPOT_SYMBOL.diamond:
+          canvas.drawPath(
+              Path()
+                ..moveTo(x - 0.7 * spot.spotSize, y)
+                ..lineTo(x, y - 0.7 * spot.spotSize)
+                ..lineTo(x + 0.7 * spot.spotSize, y)
+                ..lineTo(x, y + 0.7 * spot.spotSize),
+              spotPaint);
+          break;
+        case SPOT_SYMBOL.square:
+          canvas.drawRect(
+              Rect.fromCenter(
+                  center: Offset(x, y),
+                  width: spot.spotSize * 2,
+                  height: spot.spotSize * 2),
+              spotPaint);
+          break;
+        case SPOT_SYMBOL.trangle:
+          canvas.drawPath(
+              Path()
+                ..moveTo(x - 0.7 * spot.spotSize, y)
+                ..lineTo(x, y - 0.7 * spot.spotSize)
+                ..lineTo(x + 0.7 * spot.spotSize, y),
+              spotPaint);
+          break;
+        case SPOT_SYMBOL.triangle_down:
+          canvas.drawPath(
+              Path()
+                ..moveTo(x - 0.7 * spot.spotSize, y)
+                ..lineTo(x, y + 0.7 * spot.spotSize)
+                ..lineTo(x + 0.7 * spot.spotSize, y),
+              spotPaint);
+          break;
+      }
     }
   }
 }
