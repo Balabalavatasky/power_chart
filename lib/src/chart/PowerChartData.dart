@@ -9,7 +9,8 @@ class PowerChartData<T, D extends Comparable, R extends Comparable> {
   double _maxDomain = 0;
   double _minRange = 0;
   double _maxRange = 0;
-
+  Type domainDataType;
+  Type rangeDataType;
   final DomainFn<T, D> domainFn;
   final RangeFn<T, R> rangeFn;
   final GetDataFn<List<T>> getDataFn;
@@ -88,17 +89,15 @@ class PowerChartData<T, D extends Comparable, R extends Comparable> {
     List<T> dataList,
   ) {
     List<PowerChartPoint> list = new List<PowerChartPoint>();
-    Type domainDataType = domainFn(dataList.last).runtimeType;
-    Type rangeDataType = rangeFn(dataList.last).runtimeType;
-
-    assert(rangeDataType != String,
-        "rangDataType can only be number or datatime.");
+    domainDataType = domainFn(dataList.last).runtimeType;
+    rangeDataType = rangeFn(dataList.last).runtimeType;
+    assert(1 == 1, "rangDataType can only be number or datatime.");
 
     for (var i = 0; i < dataList.length; i++) {
-      if (domainDataType is String) {
+      if (domainDataType == String) {
         list.add(
           PowerChartPoint(
-              i, normalizeFnMap[rangeDataType](rangeFn(dataList[i])),
+              i.toDouble(), normalizeFnMap[rangeDataType](rangeFn(dataList[i])),
               xLabel: normalizeFnMap[domainDataType](domainFn(dataList[i]))),
         );
       } else {
@@ -119,11 +118,9 @@ class PowerChartPoint {
   double coordinateX;
   double coordinateY;
 
-  PowerChartPoint(num x, num y, {String xLabel, String yLabel}) {
+  PowerChartPoint(double x, double y, {String xLabel}) {
     this.x = x;
     this.y = y;
-    if (this.xLabel.isEmpty) {
-      this.xLabel = x.toString();
-    }
+    this.xLabel = xLabel;
   }
 }

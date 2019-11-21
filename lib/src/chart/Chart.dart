@@ -44,11 +44,11 @@ class _PowerChartState extends State<PowerChart> {
   @override
   void initState() {
     graphList = widget.graph;
-    _maxDomain = graphList.first.data.maxDomain;
-    _maxRange = graphList.first.data.maxRange;
-    _minDomain = graphList.first.data.minDoamin;
-    _minRange = graphList.first.data.minRange;
-    for (var i = 1; i < graphList.length; i++) {
+    _maxDomain = 0;
+    _maxRange = 0;
+    _minDomain = 0;
+    _minRange = 0;
+    for (var i = 0; i < graphList.length; i++) {
       if (graphList[i].data.maxDomain > _maxDomain) {
         _maxDomain = graphList[i].data.maxDomain;
       }
@@ -70,7 +70,7 @@ class _PowerChartState extends State<PowerChart> {
   }
 
   void _handleDrilldown(List<Indicator> indicators) {
-    for (var graph in widget.graph) {
+    for (var graph in graphList) {
       if (graph.canDrilldown && drilldownLevel < graph.drilldownList.length) {
         for (var spot in graph.data.pointList) {
           if (spot.coordinateX > touchPoint.dx + 10) {
@@ -79,7 +79,7 @@ class _PowerChartState extends State<PowerChart> {
               (touchPoint.dy - spot.coordinateY).abs() <= 10) {
             var g = graph.drilldownList[drilldownLevel];
             g.data.initData(spot.xLabel);
-            this.graphList = []..add(g);
+            graphList = []..add(g);
             drilldownLevel += 1;
             break;
           }
@@ -118,25 +118,44 @@ class _PowerChartState extends State<PowerChart> {
 
   List<TextPainter> getHorizontalAxisScaleText() {
     List<TextPainter> tpList = List<TextPainter>();
+    TextStyle scaleStyle = widget.chartBorder.horizontalAxis.scaleStyle;
+    if (scaleStyle == null) {
+      scaleStyle = this.theme.scaleStyle;
+    }
     if (widget.chartBorder.horizontalAxis.showScale) {
-      for (var i = 0; i < widget.chartBorder.horizontalAxis.scaleCount; i++) {
-        TextStyle scaleStyle = widget.chartBorder.horizontalAxis.scaleStyle;
-        if (scaleStyle == null) {
-          scaleStyle = this.theme.scaleStyle;
-        }
-        final String text = (_minDomain +
-                (_maxDomain - _minDomain) /
-                    (widget.chartBorder.horizontalAxis.scaleCount - 1) *
-                    i)
-            .toStringAsFixed(2);
-        TextPainter tp = TextPainter(
-            text: TextSpan(style: scaleStyle, text: text),
-            textAlign: TextAlign.center,
-            textDirection: TextDirection.ltr)
-          ..layout();
-        tpList.add(tp);
-        if (paddingBottom < tp.height) {
-          paddingBottom = tp.height;
+      for (var i = 0; i < graphList.length; i++) {
+        if (graphList[i].data.domainDataType is String) {
+          for (var i = 0; i < graphList[i].data.pointList.length; i++) {
+            String text = graphList[i].data.pointList[i].xLabel;
+            TextPainter tp = TextPainter(
+                text: TextSpan(style: scaleStyle, text: text),
+                textAlign: TextAlign.center,
+                textDirection: TextDirection.ltr)
+              ..layout();
+            tpList.add(tp);
+            if (paddingBottom < tp.height) {
+              paddingBottom = tp.height;
+            }
+          }
+        } else {
+          for (var i = 0;
+              i < widget.chartBorder.horizontalAxis.scaleCount;
+              i++) {
+            String text = (_minDomain +
+                    (_maxDomain - _minDomain) /
+                        (widget.chartBorder.horizontalAxis.scaleCount - 1) *
+                        i)
+                .toStringAsFixed(2);
+            TextPainter tp = TextPainter(
+                text: TextSpan(style: scaleStyle, text: text),
+                textAlign: TextAlign.center,
+                textDirection: TextDirection.ltr)
+              ..layout();
+            tpList.add(tp);
+            if (paddingBottom < tp.height) {
+              paddingBottom = tp.height;
+            }
+          }
         }
       }
     }
@@ -281,6 +300,7 @@ class _PowerChartState extends State<PowerChart> {
                 touchPoint = detail.localPosition;
                 indicators = _getIndicators();
                 _handleDrilldown(indicators);
+                print('state change');
               });
             }
           },
@@ -295,11 +315,9 @@ class _PowerChartState extends State<PowerChart> {
           child: CustomPaint(
             size: constraints.biggest,
             foregroundPainter: indicatorPaint,
-            child: RepaintBoundary(
-              child: CustomPaint(
-                size: constraints.biggest,
-                painter: baselayoutpaint,
-              ),
+            child: CustomPaint(
+              size: constraints.biggest,
+              painter: baselayoutpaint,
             ),
           ),
         );

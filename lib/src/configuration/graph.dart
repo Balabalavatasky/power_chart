@@ -13,7 +13,7 @@ class Graph {
   CHART_TYPE graphType;
   Spot spot;
   Area area;
-  bool canDrilldown;
+  bool canDrilldown = false;
   List<Graph> drilldownList = List<Graph>();
 
   Graph.spline(this.data,
