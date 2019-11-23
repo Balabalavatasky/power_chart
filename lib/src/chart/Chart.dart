@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:power_chart/src/chart/ChartState.dart';
 import 'package:power_chart/src/chart/painter/baseLayoutPainter.dart';
 import 'package:power_chart/src/chart/painter/indicatorPainter.dart';
 import 'package:power_chart/src/configuration/backgroundGrid.dart';
@@ -7,15 +8,18 @@ import 'package:power_chart/src/configuration/graph.dart';
 import 'package:power_chart/src/configuration/indicator.dart';
 import 'package:power_chart/src/theme/defaultTheme.dart';
 
-class PowerChart extends StatefulWidget {
+typedef OnSelect<String> = void Function(String, int);
+
+class Chart extends StatefulWidget {
   final Color backgroundColor;
   final List<Graph> graph;
   final bool showIndicators;
   final Indicator indicator;
   final ChartBorder chartBorder;
   final BackgroundGrid backgroundgrid;
+  final OnSelect onSelect;
 
-  PowerChart(
+  Chart(
     this.graph, {
     Key key,
     this.backgroundColor = Colors.white,
@@ -23,13 +27,14 @@ class PowerChart extends StatefulWidget {
     this.backgroundgrid,
     this.showIndicators = false,
     this.indicator,
+    this.onSelect,
   }) : super(key: key);
 
   @override
   _PowerChartState createState() => _PowerChartState();
 }
 
-class _PowerChartState extends State<PowerChart> {
+class _PowerChartState extends State<Chart> {
   List<Graph> graphList;
   Offset touchPoint;
   int drilldownLevel = 0;
@@ -41,35 +46,24 @@ class _PowerChartState extends State<PowerChart> {
   double paddingLeft = 0;
   ChartTheme theme = DefaultTheme();
   List<Indicator> indicators;
+
+  ChartState chartState;
   @override
   void initState() {
     graphList = widget.graph;
-    _maxDomain = 0;
-    _maxRange = 0;
-    _minDomain = 0;
-    _minRange = 0;
-    for (var i = 0; i < graphList.length; i++) {
-      if (graphList[i].data.maxDomain > _maxDomain) {
-        _maxDomain = graphList[i].data.maxDomain;
-      }
-      if (graphList[i].data.maxRange > _maxRange) {
-        _maxRange = graphList[i].data.maxRange;
-      }
-      if (graphList[i].data.minRange < _minRange) {
-        _minRange = graphList[i].data.minRange;
-      }
-      if (graphList[i].data.minDoamin < _minDomain) {
-        _minDomain = graphList[i].data.minDoamin;
-      }
-    }
+
     super.initState();
   }
 
-  void _handleDrillUp(int level, String xLabel) {
-    drilldownLevel = level;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (chartState == null) {
+      chartState = InheritedChartStateBuilder.of(context);
+    }
   }
 
-  void _handleDrilldown(List<Indicator> indicators) {
+  void _handleDrilldown() {
     for (var graph in graphList) {
       if (graph.canDrilldown && drilldownLevel < graph.drilldownList.length) {
         for (var spot in graph.data.pointList) {
@@ -81,6 +75,7 @@ class _PowerChartState extends State<PowerChart> {
             g.data.initData(spot.xLabel);
             graphList = []..add(g);
             drilldownLevel += 1;
+            chartState.breadCrumbTitles.add(spot.xLabel);
             break;
           }
         }
@@ -235,6 +230,24 @@ class _PowerChartState extends State<PowerChart> {
 
   @override
   Widget build(BuildContext context) {
+    _maxDomain = 0;
+    _maxRange = 0;
+    _minDomain = 0;
+    _minRange = 0;
+    for (var i = 0; i < graphList.length; i++) {
+      if (graphList[i].data.maxDomain > _maxDomain) {
+        _maxDomain = graphList[i].data.maxDomain;
+      }
+      if (graphList[i].data.maxRange > _maxRange) {
+        _maxRange = graphList[i].data.maxRange;
+      }
+      if (graphList[i].data.minRange < _minRange) {
+        _minRange = graphList[i].data.minRange;
+      }
+      if (graphList[i].data.minDoamin < _minDomain) {
+        _minDomain = graphList[i].data.minDoamin;
+      }
+    }
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         var verticalTpList = getVerticalAxisScaleText();
@@ -299,7 +312,8 @@ class _PowerChartState extends State<PowerChart> {
               setState(() {
                 touchPoint = detail.localPosition;
                 indicators = _getIndicators();
-                _handleDrilldown(indicators);
+                _handleDrilldown();
+
                 print('state change');
               });
             }

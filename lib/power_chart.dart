@@ -1,6 +1,6 @@
 library power_chart;
 
-export 'src/chart/Chart.dart';
+export 'src/chart/MainLayout.dart';
 
 export 'src/chart/PowerChartData.dart';
 
