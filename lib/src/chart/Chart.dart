@@ -47,7 +47,7 @@ class _PowerChartState extends State<Chart> {
   ChartTheme theme = DefaultTheme();
   List<Indicator> indicators;
 
-  ChartState chartState;
+  InheritedChartStateProvider chartProvider;
   @override
   void initState() {
     graphList = widget.graph;
@@ -58,8 +58,8 @@ class _PowerChartState extends State<Chart> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (chartState == null) {
-      chartState = InheritedChartStateBuilder.of(context);
+    if (chartProvider == null) {
+      chartProvider = InheritedChartStateProvider.of(context);
     }
   }
 
@@ -75,7 +75,7 @@ class _PowerChartState extends State<Chart> {
             g.data.initData(spot.xLabel);
             graphList = []..add(g);
             drilldownLevel += 1;
-            chartState.breadCrumbTitles.add(spot.xLabel);
+            chartProvider.push(spot.xLabel);
             break;
           }
         }

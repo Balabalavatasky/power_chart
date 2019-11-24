@@ -1,26 +1,40 @@
 import 'package:flutter/material.dart';
 
-class InheritedChartStateBuilder extends InheritedWidget {
+typedef Pop<int> = Function(int);
+typedef Push<String> = Function(String);
+
+class InheritedChartStateProvider extends InheritedWidget {
   final ChartState state;
+  final Push<String> push;
+  final Pop<int> pop;
+  InheritedChartStateProvider({
+    Key key,
+    @required this.state,
+    @required Widget child,
+    @required this.push,
+    @required this.pop,
+  }) : super(key: key, child: child);
 
-  InheritedChartStateBuilder(
-      {Key key, @required this.state, @required Widget child})
-      : super(key: key, child: child);
-
-  static ChartState of(BuildContext context) =>
-      (context.inheritFromWidgetOfExactType(InheritedChartStateBuilder)
-              as InheritedChartStateBuilder)
-          .state;
+  static InheritedChartStateProvider of(BuildContext context) =>
+      context.inheritFromWidgetOfExactType(InheritedChartStateProvider)
+          as InheritedChartStateProvider;
 
   @override
-  bool updateShouldNotify(InheritedChartStateBuilder oldWidget) =>
+  bool updateShouldNotify(InheritedChartStateProvider oldWidget) =>
       state != oldWidget.state;
 }
 
 class ChartState {
-  List<String> breadCrumbTitles;
+  final List<String> breadCrumbTitles;
 
-  ChartState({this.breadCrumbTitles});
+  ChartState(this.breadCrumbTitles);
 
-  factory ChartState.init() => ChartState(breadCrumbTitles: []..add("Home"));
+  factory ChartState.init() => ChartState([]..add("Home"));
+
+  factory ChartState.pop(ChartState lastState, int level) =>
+      ChartState(lastState.breadCrumbTitles.sublist(0, level));
+
+  factory ChartState.push(ChartState lastState, String label) => ChartState([]
+    ..addAll(lastState.breadCrumbTitles)
+    ..add(label));
 }
