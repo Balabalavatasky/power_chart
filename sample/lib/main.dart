@@ -48,7 +48,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 chartBorder: sampleBorder,
                 backgroundgrid: sampleBackgroundGrid,
                 showIndicators: true,
-                indicator: sampleIndicator,
               ),
             ),
           ),

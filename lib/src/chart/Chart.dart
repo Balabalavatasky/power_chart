@@ -2,32 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:power_chart/src/chart/ChartState.dart';
 import 'package:power_chart/src/chart/painter/baseLayoutPainter.dart';
 import 'package:power_chart/src/chart/painter/indicatorPainter.dart';
-import 'package:power_chart/src/configuration/backgroundGrid.dart';
-import 'package:power_chart/src/configuration/chartBorder.dart';
 import 'package:power_chart/src/configuration/graph.dart';
 import 'package:power_chart/src/configuration/indicator.dart';
-import 'package:power_chart/src/theme/defaultTheme.dart';
-
-typedef OnSelect<String> = void Function(String, int);
 
 class Chart extends StatefulWidget {
-  final Color backgroundColor;
   final List<Graph> graph;
-  final bool showIndicators;
-  final Indicator indicator;
-  final ChartBorder chartBorder;
-  final BackgroundGrid backgroundgrid;
-  final OnSelect onSelect;
 
   Chart(
     this.graph, {
     Key key,
-    this.backgroundColor = Colors.white,
-    this.chartBorder,
-    this.backgroundgrid,
-    this.showIndicators = false,
-    this.indicator,
-    this.onSelect,
   }) : super(key: key);
 
   @override
@@ -36,46 +19,43 @@ class Chart extends StatefulWidget {
 
 class _PowerChartState extends State<Chart> {
   List<Graph> graphList;
+  Graph _selecetedGraph;
+  String _selectedLabel;
   Offset touchPoint;
-  int drilldownLevel = 0;
   double _maxDomain;
   double _maxRange;
   double _minDomain;
   double _minRange;
   double paddingBottom = 0;
   double paddingLeft = 0;
-  ChartTheme theme = DefaultTheme();
   List<Indicator> indicators;
 
   InheritedChartStateProvider chartProvider;
   @override
   void initState() {
     graphList = widget.graph;
-
     super.initState();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (chartProvider == null) {
-      chartProvider = InheritedChartStateProvider.of(context);
-    }
+    chartProvider = InheritedChartStateProvider.of(context);
   }
 
   void _handleDrilldown() {
     for (var graph in graphList) {
-      if (graph.canDrilldown && drilldownLevel < graph.drilldownList.length) {
+      if (graph.canDrilldown &&
+          chartProvider.state.breadCrumbTitles.length <=
+              graph.drilldownList.length) {
         for (var spot in graph.data.pointList) {
           if (spot.coordinateX > touchPoint.dx + 10) {
             break;
           } else if ((touchPoint.dx - spot.coordinateX).abs() <= 10 &&
               (touchPoint.dy - spot.coordinateY).abs() <= 10) {
-            var g = graph.drilldownList[drilldownLevel];
-            g.data.initData(spot.xLabel);
-            graphList = []..add(g);
-            drilldownLevel += 1;
             chartProvider.push(spot.xLabel);
+            _selecetedGraph = graph;
+            _selectedLabel = spot.xLabel;
             break;
           }
         }
@@ -86,15 +66,19 @@ class _PowerChartState extends State<Chart> {
   List<TextPainter> getVerticalAxisScaleText() {
     List<TextPainter> tpList = List<TextPainter>();
     //get the max width of scale text
-    if (widget.chartBorder.verticalAxis.showScale) {
-      for (var i = 0; i < widget.chartBorder.verticalAxis.scaleCount; i++) {
-        TextStyle scaleStyle = widget.chartBorder.verticalAxis.scaleStyle;
+    if (chartProvider.state.chartBorder.verticalAxis.showScale) {
+      for (var i = 0;
+          i < chartProvider.state.chartBorder.verticalAxis.scaleCount;
+          i++) {
+        TextStyle scaleStyle =
+            chartProvider.state.chartBorder.verticalAxis.scaleStyle;
         if (scaleStyle == null) {
-          scaleStyle = this.theme.scaleStyle;
+          scaleStyle = chartProvider.state.chartTheme.scaleStyle;
         }
         final String text = (_minRange +
                 (_maxRange - _minRange) /
-                    (widget.chartBorder.horizontalAxis.scaleCount - 1) *
+                    (chartProvider.state.chartBorder.horizontalAxis.scaleCount -
+                        1) *
                     i)
             .toStringAsFixed(2);
         TextPainter tp = TextPainter(
@@ -113,11 +97,12 @@ class _PowerChartState extends State<Chart> {
 
   List<TextPainter> getHorizontalAxisScaleText() {
     List<TextPainter> tpList = List<TextPainter>();
-    TextStyle scaleStyle = widget.chartBorder.horizontalAxis.scaleStyle;
+    TextStyle scaleStyle =
+        chartProvider.state.chartBorder.horizontalAxis.scaleStyle;
     if (scaleStyle == null) {
-      scaleStyle = this.theme.scaleStyle;
+      scaleStyle = chartProvider.state.chartTheme.scaleStyle;
     }
-    if (widget.chartBorder.horizontalAxis.showScale) {
+    if (chartProvider.state.chartBorder.horizontalAxis.showScale) {
       for (var i = 0; i < graphList.length; i++) {
         if (graphList[i].data.domainDataType is String) {
           for (var i = 0; i < graphList[i].data.pointList.length; i++) {
@@ -134,11 +119,13 @@ class _PowerChartState extends State<Chart> {
           }
         } else {
           for (var i = 0;
-              i < widget.chartBorder.horizontalAxis.scaleCount;
+              i < chartProvider.state.chartBorder.horizontalAxis.scaleCount;
               i++) {
             String text = (_minDomain +
                     (_maxDomain - _minDomain) /
-                        (widget.chartBorder.horizontalAxis.scaleCount - 1) *
+                        (chartProvider
+                                .state.chartBorder.horizontalAxis.scaleCount -
+                            1) *
                         i)
                 .toStringAsFixed(2);
             TextPainter tp = TextPainter(
@@ -186,7 +173,7 @@ class _PowerChartState extends State<Chart> {
             } else if ((touchPoint.dx - spot.coordinateX).abs() <= 10) {
               Paint chartPaint = graph.chartPaint;
               if (chartPaint == null) {
-                chartPaint = this.theme.linechartPaint;
+                chartPaint = chartProvider.state.chartTheme.linechartPaint;
               }
               indicators.add(Indicator(
                 name: graph.name,
@@ -205,7 +192,7 @@ class _PowerChartState extends State<Chart> {
             if (indicators.first.position.dx == spot.coordinateX) {
               Paint chartPaint = graph.chartPaint;
               if (chartPaint == null) {
-                chartPaint = this.theme.linechartPaint;
+                chartPaint = chartProvider.state.chartTheme.linechartPaint;
               }
               indicators.add(Indicator(
                 name: graph.name,
@@ -230,6 +217,16 @@ class _PowerChartState extends State<Chart> {
 
   @override
   Widget build(BuildContext context) {
+    if (chartProvider.state.breadCrumbTitles.length == 1) {
+      _selectedLabel = null;
+      _selecetedGraph = null;
+      graphList = widget.graph;
+    } else {
+      var g = _selecetedGraph
+          .drilldownList[chartProvider.state.breadCrumbTitles.length - 2];
+      g.data.initData(_selectedLabel);
+      graphList = []..add(g);
+    }
     _maxDomain = 0;
     _maxRange = 0;
     _minDomain = 0;
@@ -281,26 +278,26 @@ class _PowerChartState extends State<Chart> {
             zeroRangeValue,
             verticalTpList,
             horizontalTpList,
-            theme,
-            widget.showIndicators,
-            widget.backgroundColor,
-            widget.chartBorder,
-            widget.backgroundgrid);
+            chartProvider.state.chartTheme,
+            chartProvider.state.showIndicators,
+            chartProvider.state.backgroundColor,
+            chartProvider.state.chartBorder,
+            chartProvider.state.backgroundgrid);
 
         final indicatorPaint = IndicatorPainter(
-            theme,
+            chartProvider.state.chartTheme,
             graphList,
-            widget.showIndicators,
+            chartProvider.state.showIndicators,
             touchPoint,
-            widget.backgroundColor,
-            widget.chartBorder,
-            widget.backgroundgrid,
+            chartProvider.state.backgroundColor,
+            chartProvider.state.chartBorder,
+            chartProvider.state.backgroundgrid,
             paddingBottom,
             indicators);
 
         return GestureDetector(
           onPanUpdate: (detail) {
-            if (widget.showIndicators) {
+            if (chartProvider.state.showIndicators) {
               setState(() {
                 indicators = _getIndicators();
                 touchPoint = detail.localPosition;
@@ -308,10 +305,9 @@ class _PowerChartState extends State<Chart> {
             }
           },
           onPanStart: (detail) {
-            if (widget.showIndicators) {
+            if (chartProvider.state.showIndicators) {
               setState(() {
                 touchPoint = detail.localPosition;
-                indicators = _getIndicators();
                 _handleDrilldown();
 
                 print('state change');
@@ -319,7 +315,7 @@ class _PowerChartState extends State<Chart> {
             }
           },
           onPanEnd: (detail) {
-            if (widget.showIndicators) {
+            if (chartProvider.state.showIndicators) {
               setState(() {
                 touchPoint = null;
                 indicators = _getIndicators();

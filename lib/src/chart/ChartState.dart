@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:power_chart/src/configuration/configuration.dart';
+import 'package:power_chart/src/theme/defaultTheme.dart';
 
 typedef Pop<int> = Function(int);
 typedef Push<String> = Function(String);
@@ -16,8 +18,8 @@ class InheritedChartStateProvider extends InheritedWidget {
   }) : super(key: key, child: child);
 
   static InheritedChartStateProvider of(BuildContext context) =>
-      context.inheritFromWidgetOfExactType(InheritedChartStateProvider)
-          as InheritedChartStateProvider;
+      context.inheritFromWidgetOfExactType(InheritedChartStateProvider);
+      
 
   @override
   bool updateShouldNotify(InheritedChartStateProvider oldWidget) =>
@@ -26,15 +28,39 @@ class InheritedChartStateProvider extends InheritedWidget {
 
 class ChartState {
   final List<String> breadCrumbTitles;
+  final bool showIndicators;
+  final ChartBorder chartBorder;
+  final BackgroundGrid backgroundgrid;
+  final Color backgroundColor;
+  final ChartTheme chartTheme;
 
-  ChartState(this.breadCrumbTitles);
+  ChartState(this.breadCrumbTitles, this.showIndicators, this.chartBorder,
+      this.backgroundgrid, this.backgroundColor, this.chartTheme);
 
-  factory ChartState.init() => ChartState([]..add("Home"));
+  factory ChartState.init(
+          bool showIndicators,
+          ChartBorder chartBorder,
+          BackgroundGrid backgroundgrid,
+          Color backgroundColor,
+          Theme chartTheme) =>
+      ChartState([]..add("Home"), showIndicators, chartBorder, backgroundgrid,
+          backgroundColor, chartTheme ?? DefaultTheme());
 
-  factory ChartState.pop(ChartState lastState, int level) =>
-      ChartState(lastState.breadCrumbTitles.sublist(0, level));
+  factory ChartState.pop(ChartState lastState, int level) => ChartState(
+      lastState.breadCrumbTitles.sublist(0, level),
+      lastState.showIndicators,
+      lastState.chartBorder,
+      lastState.backgroundgrid,
+      lastState.backgroundColor,
+      lastState.chartTheme);
 
-  factory ChartState.push(ChartState lastState, String label) => ChartState([]
-    ..addAll(lastState.breadCrumbTitles)
-    ..add(label));
+  factory ChartState.push(ChartState lastState, String label) => ChartState(
+      []
+        ..addAll(lastState.breadCrumbTitles)
+        ..add(label),
+      lastState.showIndicators,
+      lastState.chartBorder,
+      lastState.backgroundgrid,
+      lastState.backgroundColor,
+      lastState.chartTheme);
 }

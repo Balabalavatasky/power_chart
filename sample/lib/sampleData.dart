@@ -106,26 +106,43 @@ List<Graph> get sampleLineGraph => []..add(Graph.spline(
     .drilldown(Graph.spline(
         PowerChartData<Grade, String, int>.from(
           (s) {
-            print(s);
-            return List<Grade>()
-              ..add(Grade("grade1", []..add(Class("class3"))))
-              ..add(Grade(
-                  "grade2",
-                  []
-                    ..add(Class("class1"))
-                    ..add(Class("class2"))
-                    ..add(Class("class3"))
-                    ..add(Class("class4"))))
-              ..add(Grade(
-                  "grade3", []..add(Class("class1"))..add(Class("class3"))))
-              ..add(Grade(
-                  "grade4",
-                  []
-                    ..add(Class("class1"))
-                    ..add(Class("class2"))
-                    ..add(Class("class3"))
-                    ..add(Class("class4"))
-                    ..add(Class("class5"))));
+            if (s == "school1") {
+              return List<Grade>()
+                ..add(Grade("grade1", []..add(Class("class3"))))
+                ..add(Grade(
+                    "grade2",
+                    []
+                      ..add(Class("class1"))
+                      ..add(Class("class2"))
+                      ..add(Class("class3"))
+                      ..add(Class("class4"))))
+                ..add(Grade(
+                    "grade3", []..add(Class("class1"))..add(Class("class3"))))
+                ..add(Grade(
+                    "grade4",
+                    []
+                      ..add(Class("class1"))
+                      ..add(Class("class2"))
+                      ..add(Class("class3"))
+                      ..add(Class("class4"))
+                      ..add(Class("class5"))));
+            } else {
+              return List<Grade>()
+                ..add(Grade("grade1", []..add(Class("class3"))))
+                ..add(Grade(
+                    "grade2",
+                    []
+                      ..add(Class("class1"))
+                      ..add(Class("class3"))
+                      ..add(Class("class4"))))
+                ..add(Grade(
+                    "grade3", []..add(Class("class1"))..add(Class("class3"))))
+                ..add(Grade(
+                    "grade4",
+                    []
+                      ..add(Class("class4"))
+                      ..add(Class("class5"))));
+            }
           },
           (s) => s.gradeName,
           (s) => s.classList.length,
