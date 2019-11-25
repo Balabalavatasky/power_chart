@@ -144,10 +144,9 @@ class BaseLayoutPainter extends CustomPainter {
             Offset(size.width, size.height - paddingBottom),
             horizontalAxisPaint);
       }
-      for (var i = 0; i < border.horizontalAxis.scaleCount; i++) {
-        double scaleWidth = (size.width - paddingLeft) *
-            0.8 /
-            (border.horizontalAxis.scaleCount - 1);
+      for (var i = 0; i < horizontalTpList.length; i++) {
+        double scaleWidth =
+            (size.width - paddingLeft) * 0.8 / (horizontalTpList.length - 1);
         double x = scaleWidth * i;
         double y = size.height - paddingBottom;
         // draw scale

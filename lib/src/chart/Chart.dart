@@ -104,9 +104,9 @@ class _PowerChartState extends State<Chart> {
     }
     if (chartProvider.state.chartBorder.horizontalAxis.showScale) {
       for (var i = 0; i < graphList.length; i++) {
-        if (graphList[i].data.domainDataType is String) {
-          for (var i = 0; i < graphList[i].data.pointList.length; i++) {
-            String text = graphList[i].data.pointList[i].xLabel;
+        if (graphList[i].data.domainDataType == String) {
+          for (var j = 0; j < graphList[i].data.pointList.length; j++) {
+            String text = graphList[i].data.pointList[j].xLabel;
             TextPainter tp = TextPainter(
                 text: TextSpan(style: scaleStyle, text: text),
                 textAlign: TextAlign.center,
