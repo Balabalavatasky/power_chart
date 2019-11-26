@@ -32,7 +32,7 @@ class PowerChartData<T, D extends Comparable, R extends Comparable> {
 
   PowerChartData.from(this.getDataFn, this.domainFn, this.rangeFn);
 
-  PowerChartData.instant(List<T> dataList, this.domainFn, this.rangeFn)
+  PowerChartData.local(List<T> dataList, this.domainFn, this.rangeFn)
       : this.getDataFn = null {
     _dataList = dataList;
     init();

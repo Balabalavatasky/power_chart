@@ -43,7 +43,7 @@ class ChartState {
           BackgroundGrid backgroundgrid,
           Color backgroundColor,
           Theme chartTheme) =>
-      ChartState([]..add("Home"), showIndicators, chartBorder, backgroundgrid,
+      ChartState(List<String>(), showIndicators, chartBorder, backgroundgrid,
           backgroundColor, chartTheme ?? DefaultTheme());
 
   factory ChartState.pop(ChartState lastState, int level) => ChartState(

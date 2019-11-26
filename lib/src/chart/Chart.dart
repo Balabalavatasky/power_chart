@@ -217,13 +217,13 @@ class _PowerChartState extends State<Chart> {
 
   @override
   Widget build(BuildContext context) {
-    if (chartProvider.state.breadCrumbTitles.length == 1) {
+    if (chartProvider.state.breadCrumbTitles.length == 0) {
       _selectedLabel = null;
       _selecetedGraph = null;
       graphList = widget.graph;
     } else {
       var g = _selecetedGraph
-          .drilldownList[chartProvider.state.breadCrumbTitles.length - 2];
+          .drilldownList[chartProvider.state.breadCrumbTitles.length - 1];
       g.data.initData(_selectedLabel);
       graphList = []..add(g);
     }

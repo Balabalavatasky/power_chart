@@ -95,7 +95,7 @@ List<School> get schoolInfo => []
               ..add(Class("class3"))))));
 
 List<Graph> get sampleLineGraph => []..add(Graph.spline(
-        PowerChartData<School, String, int>.instant(
+        PowerChartData<School, String, int>.local(
           schoolInfo,
           (s) => s.schoolName,
           (s) => s.gradeList.length,
@@ -138,10 +138,7 @@ List<Graph> get sampleLineGraph => []..add(Graph.spline(
                 ..add(Grade(
                     "grade3", []..add(Class("class1"))..add(Class("class3"))))
                 ..add(Grade(
-                    "grade4",
-                    []
-                      ..add(Class("class4"))
-                      ..add(Class("class5"))));
+                    "grade4", []..add(Class("class4"))..add(Class("class5"))));
             }
           },
           (s) => s.gradeName,
@@ -152,7 +149,7 @@ List<Graph> get sampleLineGraph => []..add(Graph.spline(
         area: Area(showArea: true, color: Colors.redAccent, opacity: 1))));
 // ..add(
 //   Graph.spline(
-//       PowerChartData<DataModel, double, double>.instant(
+//       PowerChartData<DataModel, double, double>.local(
 //         data2,
 //         (s) => s.domainValue,
 //         (s) => s.rangeValue,

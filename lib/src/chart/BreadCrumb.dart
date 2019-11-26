@@ -14,70 +14,25 @@ class BreadCrumb extends StatelessWidget {
   }
 
   List<Widget> getBreadCrumbs(InheritedChartStateProvider stateProvider) {
-    List<Widget> wList = List<Widget>();
+    List<Widget> wList = []..add(InkWell(
+        child: Icon(
+          Icons.home,
+          size: 18,
+        ),
+        onTap: () {
+          stateProvider.pop(0);
+        },
+      ));
     for (var i = 0; i < stateProvider.state.breadCrumbTitles.length; i++) {
-      wList.add(SizedBox(
-        width: 80,
-        height: 20,
-        child: FlatButton(
-          child: Text(stateProvider.state.breadCrumbTitles[i]),
-          onPressed: () {
+      wList.add(
+        InkWell(
+          child: Text(' > ' + stateProvider.state.breadCrumbTitles[i]),
+          onTap: () {
             stateProvider.pop(i + 1);
           },
         ),
-      ));
-      if (i != stateProvider.state.breadCrumbTitles.length - 1) {
-        wList.add(Text('/'));
-      }
+      );
     }
     return wList;
   }
 }
-
-// class BreadCrumb extends StatefulWidget {
-//   @override
-//   _BreadCrumbState createState() => _BreadCrumbState();
-// }
-
-// class _BreadCrumbState extends State<BreadCrumb> {
-//   int level;
-//   ChartState chartState;
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Row(
-//       children: getBreadCrumbs(),
-//     );
-//   }
-
-//   @override
-//   void didChangeDependencies() {
-//     super.didChangeDependencies();
-//     if (chartState == null) {
-//       chartState = InheritedChartStateBuilder.of(context);
-//     }
-//   }
-
-//   List<Widget> getBreadCrumbs() {
-//     List<Widget> wList = List<Widget>();
-//     for (var i = 0; i < chartState.breadCrumbTitles.length; i++) {
-//       wList.add(SizedBox(
-//         width: 80,
-//         height: 20,
-//         child: FlatButton(
-//           child: Text(chartState.breadCrumbTitles[i]),
-//           onPressed: () {
-//             setState(() {
-//               chartState.breadCrumbTitles =
-//                   chartState.breadCrumbTitles.sublist(0, i + 1);
-//             });
-//           },
-//         ),
-//       ));
-//       if (i != chartState.breadCrumbTitles.length - 1) {
-//         wList.add(Text('/'));
-//       }
-//     }
-//     return wList;
-//   }
-// }
