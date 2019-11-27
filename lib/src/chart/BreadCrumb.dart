@@ -6,6 +6,7 @@ class BreadCrumb extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print('breadcrumb build.');
     final InheritedChartStateProvider stateProvider =
         InheritedChartStateProvider.of(context);
     return Row(

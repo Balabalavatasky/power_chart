@@ -1,34 +1,72 @@
 import 'package:flutter/material.dart';
 import 'package:power_chart/power_chart.dart';
+import 'package:power_chart/src/chart/painter/baseLayoutPainter.dart';
 import 'package:power_chart/src/configuration/enum.dart';
 import 'package:power_chart/src/configuration/indicator.dart';
 import 'package:power_chart/src/configuration/spot.dart';
 import 'package:power_chart/src/theme/defaultTheme.dart';
 
-class IndicatorPainter extends CustomPainter {
+class LayoutPainter extends BaseLayoutPainter {
   final ChartTheme theme;
   final List<Graph> graphList;
-  final bool showIndicators;
-  final Offset touchPoint;
   final Color backgroundColor;
   final ChartBorder border;
   final BackgroundGrid backgroundgrid;
-  final List<Indicator> indicators;
+
+  final double paddingLeft;
   final double paddingBottom;
 
-  IndicatorPainter(
-      this.theme,
-      this.graphList,
-      this.showIndicators,
-      this.touchPoint,
-      this.backgroundColor,
-      this.border,
-      this.backgroundgrid,
-      this.paddingBottom,
-      this.indicators);
+  final double maxDomain;
+  final double maxRange;
+  final double minDomain;
+  final double minRange;
+
+  final List<TextPainter> verticalTpList;
+  final List<TextPainter> horizontalTpList;
+
+  final double zeroRangeValue;
+  final bool showIndicators;
+  final Offset touchPoint;
+  final List<Indicator> indicators;
+
+  LayoutPainter(
+    this.theme,
+    this.graphList,
+    this.backgroundColor,
+    this.border,
+    this.backgroundgrid,
+    this.paddingLeft,
+    this.paddingBottom,
+    this.maxDomain,
+    this.maxRange,
+    this.minDomain,
+    this.minRange,
+    this.verticalTpList,
+    this.horizontalTpList,
+    this.zeroRangeValue,
+    this.showIndicators,
+    this.touchPoint,
+    this.indicators,
+  ) : super(
+            graphList,
+            paddingBottom,
+            paddingLeft,
+            maxRange,
+            maxDomain,
+            minRange,
+            minDomain,
+            zeroRangeValue,
+            verticalTpList,
+            horizontalTpList,
+            theme,
+            backgroundColor,
+            border,
+            backgroundgrid);
 
   @override
   void paint(Canvas canvas, Size size) {
+    print('layoutPaint!');
+    super.paint(canvas, size);
     if ((showIndicators || graphList.any((g) => g.canDrilldown)) &&
         touchPoint != null &&
         indicators != null) {
@@ -37,7 +75,7 @@ class IndicatorPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(IndicatorPainter oldDelegate) {
+  bool shouldRepaint(LayoutPainter oldDelegate) {
     return showIndicators && oldDelegate.touchPoint != touchPoint;
   }
 
@@ -129,52 +167,6 @@ class IndicatorPainter extends CustomPainter {
           canvas,
           Offset(topLeft.dx + padding.left + circleRedius * 2 + padding.left,
               topLeft.dy + padding.top + (nameHeight + padding.top) * i));
-    }
-  }
-
-  void drawSpot(Canvas canvas, double x, double y, Spot spot) {
-    if (spot.showSpots) {
-      Paint spotPaint = Paint()
-        ..style = PaintingStyle.fill
-        ..color = spot.color;
-      switch (spot.marker) {
-        case SPOT_SYMBOL.circle:
-          canvas.drawCircle(Offset(x, y), spot.spotSize / 2, spotPaint);
-          break;
-        case SPOT_SYMBOL.diamond:
-          canvas.drawPath(
-              Path()
-                ..moveTo(x - 0.7 * spot.spotSize, y)
-                ..lineTo(x, y - 0.7 * spot.spotSize)
-                ..lineTo(x + 0.7 * spot.spotSize, y)
-                ..lineTo(x, y + 0.7 * spot.spotSize),
-              spotPaint);
-          break;
-        case SPOT_SYMBOL.square:
-          canvas.drawRect(
-              Rect.fromCenter(
-                  center: Offset(x, y),
-                  width: spot.spotSize * 2,
-                  height: spot.spotSize * 2),
-              spotPaint);
-          break;
-        case SPOT_SYMBOL.trangle:
-          canvas.drawPath(
-              Path()
-                ..moveTo(x - 0.7 * spot.spotSize, y)
-                ..lineTo(x, y - 0.7 * spot.spotSize)
-                ..lineTo(x + 0.7 * spot.spotSize, y),
-              spotPaint);
-          break;
-        case SPOT_SYMBOL.triangle_down:
-          canvas.drawPath(
-              Path()
-                ..moveTo(x - 0.7 * spot.spotSize, y)
-                ..lineTo(x, y + 0.7 * spot.spotSize)
-                ..lineTo(x + 0.7 * spot.spotSize, y),
-              spotPaint);
-          break;
-      }
     }
   }
 }

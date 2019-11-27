@@ -3,8 +3,8 @@ typedef DomainFn<T, D> = D Function(T);
 typedef RangeFn<T, R> = R Function(T);
 typedef GetDataFn<T> = T Function(String);
 
-class PowerChartData<T, D extends Comparable, R extends Comparable> {
-  List<T> _dataList;
+class PowerChartSeries<T, D extends Comparable, R extends Comparable> {
+  List<T> _seriesList;
   double _minDoamin = 0;
   double _maxDomain = 0;
   double _minRange = 0;
@@ -24,27 +24,27 @@ class PowerChartData<T, D extends Comparable, R extends Comparable> {
     String: (a) => a,
   };
 
-  List<T> get dataList => _dataList;
-  double get minDoamin => _minDoamin;
-  double get maxDomain => _maxDomain;
-  double get minRange => _minRange;
-  double get maxRange => _maxRange;
+  List<T> get seriesList => _seriesList;
+  double get minSeriesDoamin => _minDoamin;
+  double get maxSeriesDomain => _maxDomain;
+  double get minSeriesRange => _minRange;
+  double get maxSeriesRange => _maxRange;
 
-  PowerChartData.from(this.getDataFn, this.domainFn, this.rangeFn);
+  PowerChartSeries.from(this.getDataFn, this.domainFn, this.rangeFn);
 
-  PowerChartData.local(List<T> dataList, this.domainFn, this.rangeFn)
+  PowerChartSeries.local(List<T> dataList, this.domainFn, this.rangeFn)
       : this.getDataFn = null {
-    _dataList = dataList;
+    _seriesList = dataList;
     init();
   }
 
   void initData(String label) {
-    _dataList = getDataFn(label);
+    _seriesList = getDataFn(label);
     init();
   }
 
   void init() {
-    pointList = _covertToStandardPowerChartData(this._dataList);
+    pointList = _covertToStandardPowerChartData(this._seriesList);
     this.pointList.sort((a, b) => a.x.compareTo(b.x));
     _minDoamin = this.pointList.first.x;
     _maxDomain = this.pointList.last.x;
@@ -91,7 +91,8 @@ class PowerChartData<T, D extends Comparable, R extends Comparable> {
     List<PowerChartPoint> list = new List<PowerChartPoint>();
     domainDataType = domainFn(dataList.last).runtimeType;
     rangeDataType = rangeFn(dataList.last).runtimeType;
-    assert(1 == 1, "rangDataType can only be number or datatime.");
+    assert(rangeDataType != String,
+        "rangDataType can only be number or datatime.");
 
     for (var i = 0; i < dataList.length; i++) {
       if (domainDataType == String) {
@@ -115,8 +116,8 @@ class PowerChartPoint {
   double x;
   double y;
   String xLabel;
-  double coordinateX;
-  double coordinateY;
+  double pixelX;
+  double pixelY;
 
   PowerChartPoint(double x, double y, {String xLabel}) {
     this.x = x;

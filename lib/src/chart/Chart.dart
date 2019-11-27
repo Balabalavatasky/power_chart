@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:power_chart/src/chart/ChartState.dart';
-import 'package:power_chart/src/chart/painter/baseLayoutPainter.dart';
-import 'package:power_chart/src/chart/painter/indicatorPainter.dart';
+import 'package:power_chart/src/chart/painter/layoutPainter.dart';
 import 'package:power_chart/src/configuration/graph.dart';
 import 'package:power_chart/src/configuration/indicator.dart';
 
@@ -19,8 +18,6 @@ class Chart extends StatefulWidget {
 
 class _PowerChartState extends State<Chart> {
   List<Graph> graphList;
-  Graph _selecetedGraph;
-  String _selectedLabel;
   Offset touchPoint;
   double _maxDomain;
   double _maxRange;
@@ -29,8 +26,8 @@ class _PowerChartState extends State<Chart> {
   double paddingBottom = 0;
   double paddingLeft = 0;
   List<Indicator> indicators;
-
   InheritedChartStateProvider chartProvider;
+  bool hitFlag = false;
   @override
   void initState() {
     graphList = widget.graph;
@@ -39,8 +36,33 @@ class _PowerChartState extends State<Chart> {
 
   @override
   void didChangeDependencies() {
+    print('change dependency!');
     super.didChangeDependencies();
     chartProvider = InheritedChartStateProvider.of(context);
+    if (chartProvider != null &&
+        chartProvider.state.breadCrumbTitles.length == 0) {
+      graphList = widget.graph;
+    }
+
+    _maxDomain = 0;
+    _maxRange = 0;
+    _minDomain = 0;
+    _minRange = 0;
+
+    for (var i = 0; i < graphList.length; i++) {
+      if (graphList[i].data.maxSeriesDomain > _maxDomain) {
+        _maxDomain = graphList[i].data.maxSeriesDomain;
+      }
+      if (graphList[i].data.maxSeriesRange > _maxRange) {
+        _maxRange = graphList[i].data.maxSeriesRange;
+      }
+      if (graphList[i].data.minSeriesRange < _minRange) {
+        _minRange = graphList[i].data.minSeriesRange;
+      }
+      if (graphList[i].data.minSeriesDoamin < _minDomain) {
+        _minDomain = graphList[i].data.minSeriesDoamin;
+      }
+    }
   }
 
   void _handleDrilldown() {
@@ -49,13 +71,15 @@ class _PowerChartState extends State<Chart> {
           chartProvider.state.breadCrumbTitles.length <=
               graph.drilldownList.length) {
         for (var spot in graph.data.pointList) {
-          if (spot.coordinateX > touchPoint.dx + 10) {
+          if (spot.pixelX > touchPoint.dx + 10) {
             break;
-          } else if ((touchPoint.dx - spot.coordinateX).abs() <= 10 &&
-              (touchPoint.dy - spot.coordinateY).abs() <= 10) {
+          } else if ((touchPoint.dx - spot.pixelX).abs() <= 10 &&
+              (touchPoint.dy - spot.pixelY).abs() <= 10) {
             chartProvider.push(spot.xLabel);
-            _selecetedGraph = graph;
-            _selectedLabel = spot.xLabel;
+            var g = graph
+                .drilldownList[chartProvider.state.breadCrumbTitles.length];
+            g.data.initData(spot.xLabel);
+            graphList = []..add(g);
             break;
           }
         }
@@ -168,9 +192,9 @@ class _PowerChartState extends State<Chart> {
       for (var graph in graphList) {
         for (var spot in graph.data.pointList) {
           if (indicators.length == 0) {
-            if (spot.coordinateX > touchPoint.dx + 10) {
+            if (spot.pixelX > touchPoint.dx + 10) {
               break;
-            } else if ((touchPoint.dx - spot.coordinateX).abs() <= 10) {
+            } else if ((touchPoint.dx - spot.pixelX).abs() <= 10) {
               Paint chartPaint = graph.chartPaint;
               if (chartPaint == null) {
                 chartPaint = chartProvider.state.chartTheme.linechartPaint;
@@ -180,7 +204,7 @@ class _PowerChartState extends State<Chart> {
                 rangeValue: spot.y.toString(),
                 domainValue: spot.x.toString(),
                 spot: graph.spot,
-                position: Offset(spot.coordinateX, spot.coordinateY),
+                position: Offset(spot.pixelX, spot.pixelY),
                 indicatorPaint: Paint()
                   ..style = PaintingStyle.stroke
                   ..strokeWidth = 1
@@ -189,7 +213,7 @@ class _PowerChartState extends State<Chart> {
               break;
             }
           } else {
-            if (indicators.first.position.dx == spot.coordinateX) {
+            if (indicators.first.position.dx == spot.pixelX) {
               Paint chartPaint = graph.chartPaint;
               if (chartPaint == null) {
                 chartPaint = chartProvider.state.chartTheme.linechartPaint;
@@ -199,7 +223,7 @@ class _PowerChartState extends State<Chart> {
                 rangeValue: spot.y.toString(),
                 domainValue: spot.x.toString(),
                 spot: graph.spot,
-                position: Offset(spot.coordinateX, spot.coordinateY),
+                position: Offset(spot.pixelX, spot.pixelY),
                 indicatorPaint: Paint()
                   ..style = PaintingStyle.stroke
                   ..strokeWidth = 1
@@ -217,34 +241,7 @@ class _PowerChartState extends State<Chart> {
 
   @override
   Widget build(BuildContext context) {
-    if (chartProvider.state.breadCrumbTitles.length == 0) {
-      _selectedLabel = null;
-      _selecetedGraph = null;
-      graphList = widget.graph;
-    } else {
-      var g = _selecetedGraph
-          .drilldownList[chartProvider.state.breadCrumbTitles.length - 1];
-      g.data.initData(_selectedLabel);
-      graphList = []..add(g);
-    }
-    _maxDomain = 0;
-    _maxRange = 0;
-    _minDomain = 0;
-    _minRange = 0;
-    for (var i = 0; i < graphList.length; i++) {
-      if (graphList[i].data.maxDomain > _maxDomain) {
-        _maxDomain = graphList[i].data.maxDomain;
-      }
-      if (graphList[i].data.maxRange > _maxRange) {
-        _maxRange = graphList[i].data.maxRange;
-      }
-      if (graphList[i].data.minRange < _minRange) {
-        _minRange = graphList[i].data.minRange;
-      }
-      if (graphList[i].data.minDoamin < _minDomain) {
-        _minDomain = graphList[i].data.minDoamin;
-      }
-    }
+    print('chartBuild!');
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         var verticalTpList = getVerticalAxisScaleText();
@@ -256,79 +253,69 @@ class _PowerChartState extends State<Chart> {
 
         for (var graph in graphList) {
           for (var i = 0; i < graph.data.pointList.length; i++) {
-            graph.data.pointList[i].coordinateX = _getDomainPixelPosition(
+            graph.data.pointList[i].pixelX = _getDomainPixelPosition(
                 graph.data.pointList[i].x,
                 domainDistance,
                 constraints.biggest.width);
-            graph.data.pointList[i].coordinateY = _getRangePixelPosition(
+            graph.data.pointList[i].pixelY = _getRangePixelPosition(
                 graph.data.pointList[i].y,
                 rangeDistance,
                 constraints.biggest.height);
           }
         }
 
-        final baselayoutpaint = BaseLayoutPainter(
-            graphList,
-            paddingBottom,
-            paddingLeft,
-            _maxRange,
-            _maxDomain,
-            _minRange,
-            _minDomain,
-            zeroRangeValue,
-            verticalTpList,
-            horizontalTpList,
-            chartProvider.state.chartTheme,
-            chartProvider.state.showIndicators,
-            chartProvider.state.backgroundColor,
-            chartProvider.state.chartBorder,
-            chartProvider.state.backgroundgrid);
-
-        final indicatorPaint = IndicatorPainter(
+        final indicatorPaint = LayoutPainter(
             chartProvider.state.chartTheme,
             graphList,
-            chartProvider.state.showIndicators,
-            touchPoint,
             chartProvider.state.backgroundColor,
             chartProvider.state.chartBorder,
             chartProvider.state.backgroundgrid,
+            paddingLeft,
             paddingBottom,
+            _maxDomain,
+            _maxRange,
+            _minDomain,
+            _minRange,
+            verticalTpList,
+            horizontalTpList,
+            zeroRangeValue,
+            chartProvider.state.showIndicators,
+            touchPoint,
             indicators);
 
         return GestureDetector(
           onPanUpdate: (detail) {
             if (chartProvider.state.showIndicators) {
-              setState(() {
-                indicators = _getIndicators();
-                touchPoint = detail.localPosition;
-              });
+              touchPoint = detail.localPosition;
+              indicators = _getIndicators();
+              if (indicators.length > 0 && hitFlag == false) {
+                setState(() {
+                  hitFlag = true;
+                });
+              } else if (indicators.length == 0 && hitFlag == true) {
+                setState(() {
+                  hitFlag = false;
+                });
+              }
             }
           },
-          onPanStart: (detail) {
+          onPanDown: (detail) {
             if (chartProvider.state.showIndicators) {
+              touchPoint = detail.localPosition;
               setState(() {
-                touchPoint = detail.localPosition;
                 _handleDrilldown();
-
-                print('state change');
               });
             }
           },
           onPanEnd: (detail) {
             if (chartProvider.state.showIndicators) {
-              setState(() {
-                touchPoint = null;
-                indicators = _getIndicators();
-              });
+              touchPoint = null;
+              setState(() {});
             }
           },
           child: CustomPaint(
             size: constraints.biggest,
-            foregroundPainter: indicatorPaint,
-            child: CustomPaint(
-              size: constraints.biggest,
-              painter: baselayoutpaint,
-            ),
+            painter: indicatorPaint,
           ),
         );
       },

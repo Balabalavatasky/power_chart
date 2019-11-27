@@ -95,7 +95,7 @@ List<School> get schoolInfo => []
               ..add(Class("class3"))))));
 
 List<Graph> get sampleLineGraph => []..add(Graph.spline(
-        PowerChartData<School, String, int>.local(
+        PowerChartSeries<School, String, int>.local(
           schoolInfo,
           (s) => s.schoolName,
           (s) => s.gradeList.length,
@@ -104,7 +104,7 @@ List<Graph> get sampleLineGraph => []..add(Graph.spline(
         spot: Spot(showSpots: true, marker: SPOT_SYMBOL.circle),
         area: Area(showArea: false, color: Colors.redAccent, opacity: 1))
     .drilldown(Graph.spline(
-        PowerChartData<Grade, String, int>.from(
+        PowerChartSeries<Grade, String, int>.from(
           (s) {
             if (s == "school1") {
               return List<Grade>()

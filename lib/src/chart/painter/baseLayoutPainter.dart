@@ -7,23 +7,22 @@ import 'package:power_chart/src/theme/defaultTheme.dart';
 class BaseLayoutPainter extends CustomPainter {
   final ChartTheme theme;
   final List<Graph> graph;
-  bool showIndicators;
-  Color backgroundColor;
-  ChartBorder border;
-  BackgroundGrid backgroundgrid;
+  final Color backgroundColor;
+  final ChartBorder border;
+  final BackgroundGrid backgroundgrid;
 
-  double paddingLeft = 0;
-  double paddingBottom = 0;
+  final double paddingLeft;
+  final double paddingBottom;
 
-  double maxDomain;
-  double maxRange;
-  double minDomain;
-  double minRange;
+  final double maxDomain;
+  final double maxRange;
+  final double minDomain;
+  final double minRange;
 
-  List<TextPainter> verticalTpList;
-  List<TextPainter> horizontalTpList;
+  final List<TextPainter> verticalTpList;
+  final List<TextPainter> horizontalTpList;
 
-  double zeroRangeValue;
+  final double zeroRangeValue;
 
   BaseLayoutPainter(
     this.graph,
@@ -37,7 +36,6 @@ class BaseLayoutPainter extends CustomPainter {
     this.verticalTpList,
     this.horizontalTpList,
     this.theme,
-    this.showIndicators,
     this.backgroundColor,
     this.border,
     this.backgroundgrid,
@@ -45,6 +43,7 @@ class BaseLayoutPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    print("baseLayoutPaint!");
     _drawAxis(canvas, size);
     _drawChart(canvas, size, graph);
   }
@@ -219,25 +218,21 @@ class BaseLayoutPainter extends CustomPainter {
     var temp = const Offset(0.0, 0.0);
     for (var i = 0; i < data.pointList.length; i++) {
       Offset current =
-          Offset(data.pointList[i].coordinateX, data.pointList[i].coordinateY);
+          Offset(data.pointList[i].pixelX, data.pointList[i].pixelY);
       if (i == 0) {
-        curvepath.moveTo(
-            data.pointList[i].coordinateX, data.pointList[i].coordinateY);
-        areapath.moveTo(
-            data.pointList[i].coordinateX, data.pointList[i].coordinateY);
+        curvepath.moveTo(data.pointList[i].pixelX, data.pointList[i].pixelY);
+        areapath.moveTo(data.pointList[i].pixelX, data.pointList[i].pixelY);
       } else {
         //very brilliant spline chart render idea from
         //imaNNeoFighT/fl_chart
         //https://github.com/imaNNeoFighT/fl_chart
 
-        Offset previous = Offset(data.pointList[i - 1].coordinateX,
-            data.pointList[i - 1].coordinateY);
+        Offset previous =
+            Offset(data.pointList[i - 1].pixelX, data.pointList[i - 1].pixelY);
 
         Offset next = Offset(
-            data.pointList[i + 1 < data.pointList.length ? i + 1 : i]
-                .coordinateX,
-            data.pointList[i + 1 < data.pointList.length ? i + 1 : i]
-                .coordinateY);
+            data.pointList[i + 1 < data.pointList.length ? i + 1 : i].pixelX,
+            data.pointList[i + 1 < data.pointList.length ? i + 1 : i].pixelY);
 
         Offset controllerPoint1 = previous + temp;
         temp = ((next - previous) / 2) * 0.35;
@@ -269,10 +264,10 @@ class BaseLayoutPainter extends CustomPainter {
 
       if (minRange > 0) {
       } else {
-        areapath.lineTo(data.pointList.last.coordinateX, zeroRangeValue);
-        areapath.lineTo(data.pointList.first.coordinateX, zeroRangeValue);
+        areapath.lineTo(data.pointList.last.pixelX, zeroRangeValue);
+        areapath.lineTo(data.pointList.first.pixelX, zeroRangeValue);
         areapath.lineTo(
-            data.pointList.first.coordinateX, data.pointList.first.coordinateY);
+            data.pointList.first.pixelX, data.pointList.first.pixelY);
       }
       canvas.drawPath(areapath, areaPaint);
     }
@@ -288,7 +283,7 @@ class BaseLayoutPainter extends CustomPainter {
     }
     if (spot.showSpots) {
       for (var point in data.pointList) {
-        drawSpot(canvas, point.coordinateX, point.coordinateY, spot);
+        drawSpot(canvas, point.pixelX, point.pixelY, spot);
       }
     }
   }
@@ -308,23 +303,21 @@ class BaseLayoutPainter extends CustomPainter {
     }
 
     for (var i = 0; i < data.pointList.length; i++) {
-      data.pointList[i].coordinateX = (data.pointList[i].x - this.minDomain) /
+      data.pointList[i].pixelX = (data.pointList[i].x - this.minDomain) /
               domainDistance *
               (size.width - paddingLeft) *
               0.8 +
           paddingLeft +
           0.1 * (size.width - paddingLeft);
-      data.pointList[i].coordinateY =
+      data.pointList[i].pixelY =
           (1 - (data.pointList[i].y - this.minRange) / rangeDistance) *
                   (size.height - paddingBottom) *
                   0.8 +
               0.1 * (size.height - paddingBottom);
       if (i == 0) {
-        path.moveTo(
-            data.pointList[i].coordinateX, data.pointList[i].coordinateY);
+        path.moveTo(data.pointList[i].pixelX, data.pointList[i].pixelY);
       } else {
-        path.lineTo(
-            data.pointList[i].coordinateX, data.pointList[i].coordinateY);
+        path.lineTo(data.pointList[i].pixelX, data.pointList[i].pixelY);
       }
       Spot spot = graph.spot;
       if (spot == null) {
@@ -333,8 +326,8 @@ class BaseLayoutPainter extends CustomPainter {
       if (spot.color == null) {
         spot.color = chartPaint.color;
       }
-      drawSpot(canvas, data.pointList[i].coordinateX,
-          data.pointList[i].coordinateY, spot);
+      drawSpot(
+          canvas, data.pointList[i].pixelX, data.pointList[i].pixelY, spot);
     }
 
     canvas.drawPath(path, chartPaint);
@@ -343,11 +336,11 @@ class BaseLayoutPainter extends CustomPainter {
   void _drawBarChart(Canvas canvas, Size size, Graph graph) {
     final data = graph.data;
     final chartPaint = graph.chartPaint;
-    final double domainDistance = data.maxDomain - data.minDoamin;
+    final double domainDistance = data.maxSeriesDomain - data.minSeriesDoamin;
 
     for (var i = 0; i < data.pointList.length; i++) {
-      double x = (data.pointList[i].x - data.minDoamin) / domainDistance;
-      double y = 1 - data.pointList[i].y / data.maxRange;
+      double x = (data.pointList[i].x - data.minSeriesDoamin) / domainDistance;
+      double y = 1 - data.pointList[i].y / data.maxSeriesRange;
       double barWidth = size.width / (data.pointList.length * 2 - 1);
       canvas.drawRRect(
           new RRect.fromLTRBR(

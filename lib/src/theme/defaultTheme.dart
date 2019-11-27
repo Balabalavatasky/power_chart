@@ -20,7 +20,7 @@ class DefaultTheme extends ChartTheme {
   Paint get indicatorPaint => Paint()
     ..style = PaintingStyle.stroke
     ..strokeWidth = 1
-    ..color = Colors.black;
+    ..color = linechartPaint.color;
   TextStyle get scaleStyle => TextStyle(
         color: Colors.black,
       );
