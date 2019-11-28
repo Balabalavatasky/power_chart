@@ -50,7 +50,7 @@ class BaseLayoutPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(BaseLayoutPainter oldDelegate) {
-    return oldDelegate.graph.length != graph.length;
+    return true;
   }
 
   void _drawAxis(Canvas canvas, Size size) {
@@ -292,28 +292,13 @@ class BaseLayoutPainter extends CustomPainter {
 
   void _drawLineChart(Canvas canvas, Size size, Graph graph) {
     final data = graph.data;
-    final double domainDistance = this.maxDomain - this.minDomain;
-    final double rangeDistance = this.maxRange - this.minRange;
-
     final path = Path();
-
     Paint chartPaint = graph.chartPaint;
     if (chartPaint == null) {
       chartPaint = this.theme.linechartPaint;
     }
 
     for (var i = 0; i < data.pointList.length; i++) {
-      data.pointList[i].pixelX = (data.pointList[i].x - this.minDomain) /
-              domainDistance *
-              (size.width - paddingLeft) *
-              0.8 +
-          paddingLeft +
-          0.1 * (size.width - paddingLeft);
-      data.pointList[i].pixelY =
-          (1 - (data.pointList[i].y - this.minRange) / rangeDistance) *
-                  (size.height - paddingBottom) *
-                  0.8 +
-              0.1 * (size.height - paddingBottom);
       if (i == 0) {
         path.moveTo(data.pointList[i].pixelX, data.pointList[i].pixelY);
       } else {
@@ -335,28 +320,19 @@ class BaseLayoutPainter extends CustomPainter {
 
   void _drawBarChart(Canvas canvas, Size size, Graph graph) {
     final data = graph.data;
-    final chartPaint = graph.chartPaint;
-    final double domainDistance = data.maxSeriesDomain - data.minSeriesDoamin;
-
+    Paint chartPaint = graph.chartPaint;
+    if (chartPaint == null) {
+      chartPaint = theme.barchartPaint;
+    }
     for (var i = 0; i < data.pointList.length; i++) {
-      double x = (data.pointList[i].x - data.minSeriesDoamin) / domainDistance;
-      double y = 1 - data.pointList[i].y / data.maxSeriesRange;
-      double barWidth = size.width / (data.pointList.length * 2 - 1);
+      double barWidth =
+          (size.width - paddingLeft) / (data.pointList.length * 2 - 1);
       canvas.drawRRect(
-          new RRect.fromLTRBR(
-              i == 0
-                  ? x * size.width
-                  : x * size.width -
-                      barWidth / data.pointList.length * i -
-                      chartPaint.strokeWidth,
-              y * size.height,
-              i == 0
-                  ? x * size.width + barWidth
-                  : x * size.width -
-                      barWidth / data.pointList.length * i -
-                      chartPaint.strokeWidth +
-                      barWidth,
-              size.height,
+          RRect.fromLTRBR(
+              data.pointList[i].pixelX - barWidth / 2,
+              data.pointList[i].pixelY,
+              data.pointList[i].pixelX + barWidth / 2,
+              size.height - paddingBottom,
               new Radius.circular(5.0)),
           chartPaint);
     }

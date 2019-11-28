@@ -94,59 +94,60 @@ List<School> get schoolInfo => []
               ..add(Class("class2"))
               ..add(Class("class3"))))));
 
-List<Graph> get sampleLineGraph => []..add(Graph.spline(
-        PowerChartSeries<School, String, int>.local(
-          schoolInfo,
-          (s) => s.schoolName,
-          (s) => s.gradeList.length,
-        ),
-        name: "school",
-        spot: Spot(showSpots: true, marker: SPOT_SYMBOL.circle),
-        area: Area(showArea: false, color: Colors.redAccent, opacity: 1))
-    .drilldown(Graph.spline(
-        PowerChartSeries<Grade, String, int>.from(
-          (s) {
-            if (s == "school1") {
-              return List<Grade>()
-                ..add(Grade("grade1", []..add(Class("class3"))))
-                ..add(Grade(
-                    "grade2",
-                    []
-                      ..add(Class("class1"))
-                      ..add(Class("class2"))
-                      ..add(Class("class3"))
-                      ..add(Class("class4"))))
-                ..add(Grade(
-                    "grade3", []..add(Class("class1"))..add(Class("class3"))))
-                ..add(Grade(
-                    "grade4",
-                    []
-                      ..add(Class("class1"))
-                      ..add(Class("class2"))
-                      ..add(Class("class3"))
-                      ..add(Class("class4"))
-                      ..add(Class("class5"))));
-            } else {
-              return List<Grade>()
-                ..add(Grade("grade1", []..add(Class("class3"))))
-                ..add(Grade(
-                    "grade2",
-                    []
-                      ..add(Class("class1"))
-                      ..add(Class("class3"))
-                      ..add(Class("class4"))))
-                ..add(Grade(
-                    "grade3", []..add(Class("class1"))..add(Class("class3"))))
-                ..add(Grade(
-                    "grade4", []..add(Class("class4"))..add(Class("class5"))));
-            }
-          },
-          (s) => s.gradeName,
-          (s) => s.classList.length,
-        ),
-        name: "sample1",
-        spot: Spot(showSpots: true, marker: SPOT_SYMBOL.circle),
-        area: Area(showArea: true, color: Colors.redAccent, opacity: 1))));
+List<Graph> get sampleLineGraph => []..add(Graph.bar(
+    PowerChartSeries<School, String, int>.local(
+      schoolInfo,
+      (s) => s.schoolName,
+      (s) => s.gradeList.length,
+    ),
+    name: "school",
+    //spot: Spot(showSpots: true, marker: SPOT_SYMBOL.circle),
+    //area: Area(showArea: false, color: Colors.redAccent, opacity: 1)
+  ).drilldown(Graph.bar(
+    PowerChartSeries<Grade, String, int>.from(
+      (s) {
+        if (s == "school1") {
+          return List<Grade>()
+            ..add(Grade("grade1", []..add(Class("class3"))))
+            ..add(Grade(
+                "grade2",
+                []
+                  ..add(Class("class1"))
+                  ..add(Class("class2"))
+                  ..add(Class("class3"))
+                  ..add(Class("class4"))))
+            ..add(
+                Grade("grade3", []..add(Class("class1"))..add(Class("class3"))))
+            ..add(Grade(
+                "grade4",
+                []
+                  ..add(Class("class1"))
+                  ..add(Class("class2"))
+                  ..add(Class("class3"))
+                  ..add(Class("class4"))
+                  ..add(Class("class5"))));
+        } else {
+          return List<Grade>()
+            ..add(Grade("grade1", []..add(Class("class3"))))
+            ..add(Grade(
+                "grade2",
+                []
+                  ..add(Class("class1"))
+                  ..add(Class("class3"))
+                  ..add(Class("class4"))))
+            ..add(
+                Grade("grade3", []..add(Class("class1"))..add(Class("class3"))))
+            ..add(Grade(
+                "grade4", []..add(Class("class4"))..add(Class("class5"))));
+        }
+      },
+      (s) => s.gradeName,
+      (s) => s.classList.length,
+    ),
+    name: "sample1",
+    //spot: Spot(showSpots: true, marker: SPOT_SYMBOL.circle),
+    //area: Area(showArea: true, color: Colors.redAccent, opacity: 1)
+  )));
 // ..add(
 //   Graph.spline(
 //       PowerChartData<DataModel, double, double>.local(

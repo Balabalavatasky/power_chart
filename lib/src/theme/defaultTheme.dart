@@ -7,6 +7,7 @@ abstract class ChartTheme {
   Paint get verticalGridLinePaint;
   Paint get horizontalGridLinePaint;
   Paint get linechartPaint;
+  Paint get barchartPaint;
   Spot get spot;
   Area get area;
   TextStyle get scaleStyle;
@@ -36,6 +37,7 @@ class DefaultTheme extends ChartTheme {
     ..style = PaintingStyle.stroke
     ..strokeWidth = 1
     ..color = Colors.blueGrey;
+  Paint get barchartPaint => Paint()..style = PaintingStyle.fill;
   Spot get spot => Spot(showSpots: false);
   Area get area => Area(showArea: false, color: Colors.blueAccent, opacity: 1);
 }

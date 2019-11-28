@@ -4,6 +4,13 @@ import 'package:power_chart/src/chart/painter/layoutPainter.dart';
 import 'package:power_chart/src/configuration/graph.dart';
 import 'package:power_chart/src/configuration/indicator.dart';
 
+class AxisScale {
+  final TextPainter textPainter;
+  final Offset pixelCooridinate;
+
+  AxisScale(this.textPainter, this.pixelCooridinate);
+}
+
 class Chart extends StatefulWidget {
   final List<Graph> graph;
 
@@ -119,8 +126,9 @@ class _PowerChartState extends State<Chart> {
     return tpList;
   }
 
-  List<TextPainter> getHorizontalAxisScaleText() {
+  List<TextPainter> getHorizontalAxisScaleText(Size size) {
     List<TextPainter> tpList = List<TextPainter>();
+
     TextStyle scaleStyle =
         chartProvider.state.chartBorder.horizontalAxis.scaleStyle;
     if (scaleStyle == null) {
@@ -165,6 +173,14 @@ class _PowerChartState extends State<Chart> {
         }
       }
     }
+    List<AxisScale> asList = List<AxisScale>();
+    for (var i = 0; i < tpList.length; i++) {
+      double scaleWidth =
+          (size.width - paddingLeft) * 0.8 / (tpList.length - 1);
+      double x = scaleWidth * i;
+      double y = size.height - paddingBottom;
+      asList.add(AxisScale(tpList[i], Offset(x, y)));
+    }
     return tpList;
   }
 
@@ -176,14 +192,15 @@ class _PowerChartState extends State<Chart> {
         0.1 * (height - paddingBottom);
   }
 
-  double _getDomainPixelPosition(
-      double domainValue, double domainDistance, double width) {
+  double _getDomainPixelPosition(double domainValue, double domainDistance,
+      double width, double barWidth) {
     return (domainValue - _minDomain) /
             domainDistance *
             (width - paddingLeft) *
             0.8 +
         paddingLeft +
-        0.1 * (width - paddingLeft);
+        0.1 * (width - paddingLeft) +
+        barWidth / 2;
   }
 
   List<Indicator> _getIndicators() {
@@ -245,18 +262,22 @@ class _PowerChartState extends State<Chart> {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         var verticalTpList = getVerticalAxisScaleText();
-        var horizontalTpList = getHorizontalAxisScaleText();
+        var horizontalTpList = getHorizontalAxisScaleText(constraints.biggest);
         final double domainDistance = _maxDomain - _minDomain;
         final double rangeDistance = _maxRange - _minRange;
         final double zeroRangeValue = _getRangePixelPosition(
             0, rangeDistance, constraints.biggest.height);
 
         for (var graph in graphList) {
+          double barWidth = (constraints.biggest.width - paddingLeft) /
+              (graph.data.pointList.length * 2 - 1);
+
           for (var i = 0; i < graph.data.pointList.length; i++) {
             graph.data.pointList[i].pixelX = _getDomainPixelPosition(
                 graph.data.pointList[i].x,
                 domainDistance,
-                constraints.biggest.width);
+                constraints.biggest.width,
+                barWidth);
             graph.data.pointList[i].pixelY = _getRangePixelPosition(
                 graph.data.pointList[i].y,
                 rangeDistance,
