@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:power_chart/power_chart.dart';
 import 'package:power_chart/src/configuration/enum.dart';
 import 'package:power_chart/src/configuration/spot.dart';
+import 'package:power_chart/src/model/AxisScale.dart';
 import 'package:power_chart/src/theme/defaultTheme.dart';
 
 class BaseLayoutPainter extends CustomPainter {
@@ -20,7 +21,7 @@ class BaseLayoutPainter extends CustomPainter {
   final double minRange;
 
   final List<TextPainter> verticalTpList;
-  final List<TextPainter> horizontalTpList;
+  final List<AxisScale> horizontalTpList;
 
   final double zeroRangeValue;
 
@@ -144,20 +145,15 @@ class BaseLayoutPainter extends CustomPainter {
             horizontalAxisPaint);
       }
       for (var i = 0; i < horizontalTpList.length; i++) {
-        double scaleWidth =
-            (size.width - paddingLeft) * 0.8 / (horizontalTpList.length - 1);
-        double x = scaleWidth * i;
+        // double scaleWidth =
+        //     (size.width - paddingLeft) * 0.8 / (horizontalTpList.length - 1);
+        //double x = scaleWidth * i;
         double y = size.height - paddingBottom;
         // draw scale
         if (border.horizontalAxis.showScale) {
-          horizontalTpList[i].paint(
-              canvas,
-              Offset(
-                  x +
-                      paddingLeft -
-                      horizontalTpList[i].width / 2 +
-                      (size.width - paddingLeft) * 0.1,
-                  y));
+          horizontalTpList[i]
+              .scaleTextPainter
+              .paint(canvas, Offset(horizontalTpList[i].axisPixel, y));
         }
         //draw scale indicator
         if (border.horizontalAxis.showScaleIndicator) {
@@ -165,10 +161,8 @@ class BaseLayoutPainter extends CustomPainter {
           if (indicatorPaint == null) {
             indicatorPaint = this.theme.indicatorPaint;
           }
-          canvas.drawLine(
-              Offset(x + (size.width - paddingLeft) * 0.1 + paddingLeft, y),
-              Offset(x + (size.width - paddingLeft) * 0.1 + paddingLeft, y - 5),
-              indicatorPaint);
+          canvas.drawLine(Offset(horizontalTpList[i].axisPixel, y),
+              Offset(horizontalTpList[i].axisPixel, y - 5), indicatorPaint);
         }
         //draw gridline
         if (backgroundgrid.showVerticalGridLine) {
@@ -176,10 +170,8 @@ class BaseLayoutPainter extends CustomPainter {
           if (verticalGridLinePaint == null) {
             verticalGridLinePaint = this.theme.verticalGridLinePaint;
           }
-          canvas.drawLine(
-              Offset(x + (size.width - paddingLeft) * 0.1 + paddingLeft, y),
-              Offset(x + (size.width - paddingLeft) * 0.1 + paddingLeft, 0),
-              verticalGridLinePaint);
+          canvas.drawLine(Offset(horizontalTpList[i].axisPixel, y),
+              Offset(horizontalTpList[i].axisPixel, 0), verticalGridLinePaint);
         }
       }
     }
@@ -326,7 +318,7 @@ class BaseLayoutPainter extends CustomPainter {
     }
     for (var i = 0; i < data.pointList.length; i++) {
       double barWidth =
-          (size.width - paddingLeft) / (data.pointList.length * 2 - 1);
+          (size.width - paddingLeft) * 0.8 / (data.pointList.length * 2 - 1);
       canvas.drawRRect(
           RRect.fromLTRBR(
               data.pointList[i].pixelX - barWidth / 2,

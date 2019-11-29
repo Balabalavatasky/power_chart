@@ -4,6 +4,7 @@ import 'package:power_chart/src/chart/painter/baseLayoutPainter.dart';
 import 'package:power_chart/src/configuration/enum.dart';
 import 'package:power_chart/src/configuration/indicator.dart';
 import 'package:power_chart/src/configuration/spot.dart';
+import 'package:power_chart/src/model/AxisScale.dart';
 import 'package:power_chart/src/theme/defaultTheme.dart';
 
 class LayoutPainter extends BaseLayoutPainter {
@@ -22,7 +23,7 @@ class LayoutPainter extends BaseLayoutPainter {
   final double minRange;
 
   final List<TextPainter> verticalTpList;
-  final List<TextPainter> horizontalTpList;
+  final List<AxisScale> horizontalTpList;
 
   final double zeroRangeValue;
   final bool showIndicators;

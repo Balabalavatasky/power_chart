@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:power_chart/power_chart.dart';
 import 'package:power_chart/src/chart/ChartState.dart';
 import 'package:power_chart/src/chart/painter/layoutPainter.dart';
 import 'package:power_chart/src/configuration/graph.dart';
 import 'package:power_chart/src/configuration/indicator.dart';
+import 'package:power_chart/src/model/AxisScale.dart';
 
 class Chart extends StatefulWidget {
   final List<Graph> graph;
@@ -119,8 +121,8 @@ class _PowerChartState extends State<Chart> {
     return tpList;
   }
 
-  List<TextPainter> getHorizontalAxisScaleText(Size size) {
-    List<TextPainter> tpList = List<TextPainter>();
+  List<AxisScale> getHorizontalAxisScaleText(Size size) {
+    List<AxisScale> tpList = List<AxisScale>();
 
     TextStyle scaleStyle =
         chartProvider.state.chartBorder.horizontalAxis.scaleStyle;
@@ -137,7 +139,16 @@ class _PowerChartState extends State<Chart> {
                 textAlign: TextAlign.center,
                 textDirection: TextDirection.ltr)
               ..layout();
-            tpList.add(tp);
+
+            double x = (size.width - paddingLeft) *
+                    0.8 /
+                    (graphList[i].data.pointList.length * 2 - 1) *
+                    (2 * j + 0.5) +
+                paddingLeft +
+                (size.width - paddingLeft) * 0.1 -
+                tp.width / 2;
+            tpList.add(AxisScale(tp, x));
+
             if (paddingBottom < tp.height) {
               paddingBottom = tp.height;
             }
@@ -158,7 +169,14 @@ class _PowerChartState extends State<Chart> {
                 textAlign: TextAlign.center,
                 textDirection: TextDirection.ltr)
               ..layout();
-            tpList.add(tp);
+
+            double x = (size.width - paddingLeft) /
+                    (graphList[i].data.pointList.length * 2 - 1) *
+                    (2 * i + 0.5) +
+                paddingLeft -
+                tp.width / 2;
+
+            tpList.add(AxisScale(tp, x));
             if (paddingBottom < tp.height) {
               paddingBottom = tp.height;
             }
@@ -177,14 +195,13 @@ class _PowerChartState extends State<Chart> {
         0.1 * (height - paddingBottom);
   }
 
-  double _getDomainPixelPosition(
-      double domainValue, double domainDistance, double width) {
-    return (domainValue - _minDomain) /
-            domainDistance *
-            (width - paddingLeft) *
-            0.8 +
+  double _getDomainPixelPosition(double domainValue, int length, double width) {
+    return (width - paddingLeft) *
+            0.8 /
+            (length * 2 - 1) *
+            (2 * domainValue + 0.5) +
         paddingLeft +
-        0.1 * (width - paddingLeft);
+        (width - paddingLeft) * 0.1;
   }
 
   List<Indicator> _getIndicators() {
@@ -256,9 +273,10 @@ class _PowerChartState extends State<Chart> {
           for (var i = 0; i < graph.data.pointList.length; i++) {
             graph.data.pointList[i].pixelX = _getDomainPixelPosition(
               graph.data.pointList[i].x,
-              domainDistance,
+              graph.data.pointList.length,
               constraints.biggest.width,
             );
+
             graph.data.pointList[i].pixelY = _getRangePixelPosition(
                 graph.data.pointList[i].y,
                 rangeDistance,
