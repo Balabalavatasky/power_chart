@@ -94,16 +94,16 @@ List<School> get schoolInfo => []
               ..add(Class("class2"))
               ..add(Class("class3"))))));
 
-List<Graph> get sampleLineGraph => []..add(Graph.bar(
+List<Graph> get sampleLineGraph => []..add(Graph.spline(
     PowerChartSeries<School, String, int>.local(
       schoolInfo,
       (s) => s.schoolName,
       (s) => s.gradeList.length,
     ),
     name: "school",
-    //spot: Spot(showSpots: true, marker: SPOT_SYMBOL.circle),
-    //area: Area(showArea: false, color: Colors.redAccent, opacity: 1)
-  ).drilldown(Graph.bar(
+    spot: Spot(showSpots: true, marker: SPOT_SYMBOL.circle),
+    area: Area(showArea: false, color: Colors.redAccent, opacity: 1)
+  ).drilldown(Graph.spline(
     PowerChartSeries<Grade, String, int>.from(
       (s) {
         if (s == "school1") {
@@ -145,8 +145,8 @@ List<Graph> get sampleLineGraph => []..add(Graph.bar(
       (s) => s.classList.length,
     ),
     name: "sample1",
-    //spot: Spot(showSpots: true, marker: SPOT_SYMBOL.circle),
-    //area: Area(showArea: true, color: Colors.redAccent, opacity: 1)
+    spot: Spot(showSpots: true, marker: SPOT_SYMBOL.circle),
+    area: Area(showArea: true, color: Colors.redAccent, opacity: 1)
   )));
 // ..add(
 //   Graph.spline(

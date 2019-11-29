@@ -56,6 +56,8 @@ class LayoutPainter extends BaseLayoutPainter {
             minRange,
             minDomain,
             zeroRangeValue,
+            verticalTpList,
+            horizontalTpList,
             theme,
             backgroundColor,
             border,
